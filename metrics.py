@@ -26,8 +26,8 @@ def calcPSI(exp, act):
     exp = exp.value_counts(normalize=True).sort_index()
     act = act.value_counts(normalize=True).sort_index()
     # Соединение в один датафрейм
-    df = pd.concat([exp, act], axis=1).fillna(0)
-    df.columns = ['expected', 'actual']
+    df = pd.concat([exp, act], axis=1).fillna(0).reset_index()
+    df.columns = ['group', 'expected', 'actual']
     # Расчет PSI по каждой группе
     df['PSI'] = ((df['actual'] - df['expected'])
                  * np.log((df['actual'] + 0.000001) / (df['expected'] + 0.000001)))
