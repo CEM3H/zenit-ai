@@ -76,6 +76,7 @@ import seaborn as sns
 
 from matplotlib import pyplot as plt
 from scipy.stats import sem
+from IPython.display import display
 
 # ## Функция улучшенная
 
@@ -145,8 +146,7 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     min_ind = 0 # минимальный индекс. Начальные условия
 
     while min_ind < DF_grouping.shape[0]: # цикл по новым группам
-        pd_gr_i = k01 # средняя pd в группе. Начальные условия (зависит от общего тренда)
-        
+
         # Расчет показателей накопительным итогом
         DF_j = DF_grouping.loc[min_ind:]
         DF_iter = DF_j[['sample_rate', 'sample_count', 'target_count']].cumsum()
@@ -326,13 +326,13 @@ def group_plot(DF_result):
 
 # ### Трансформер
 
-def woeTransformer(x, y, 
-				   cat_values=[], 
-				   min_sample_rate=0.05, 
-				   min_count=3, 
-				   low_accuracy=None, 
-				   plot=True, 
-				   verbose=True):
+def woeTransformer(x, y,
+                   cat_values=[],
+                   min_sample_rate=0.05,
+                   min_count=3,
+                   low_accuracy=None,
+                   plot=True,
+                   verbose=True):
     """
     Группировка значений предиктора, определение оптимальных границ и расчет WOE и IV
     
@@ -340,7 +340,7 @@ def woeTransformer(x, y,
     ---------------
         x : pandas.Series
                 Mассив числовых значений предиктора. Не должен содержать пропущенных
-				значений, но может сочетать строковые и числовые
+                значений, но может сочетать строковые и числовые
         y : pandas.Series
                 Mассив меток класса (0, 1)
         cat_values: list 
@@ -367,29 +367,28 @@ def woeTransformer(x, y,
                 
     """
     # Обработка входных данных
-    DF_data_i = pd.DataFrame()
-    DF_data_i['predictor'] = x
-    DF_data_i['target'] = y
-    
+    DF_data_i = pd.DataFrame({'predictor':x,
+                              'target':y})
+
     # Агрегация данных по значениям предиктора
     DF_data_gr = grouping(DF_data_i, low_accuracy)
-    
+
     # Проверка категориальных групп (возможные дополнительные категории)
     if verbose:
         ## Выделение значений предиктора с достаточным кол-вом наблюдений и 
         ## не отмеченных, как категориальные
         DF_i1 = (DF_data_gr
-                 .loc[DF_data_gr['sample_rate'] > min_sample_rate]
-                 .loc[~DF_data_gr['predictor'].isin(cat_values)])
-    
+            .loc[DF_data_gr['sample_rate'] > min_sample_rate]
+            .loc[~DF_data_gr['predictor'].isin(cat_values)])
+
         ## Выделение всех значений предиктора, не отмеченных, как категориальные
         DF_i2 = DF_data_gr.loc[~DF_data_gr['predictor'].isin(cat_values)]
-    
+
         ## Выбор значений: которые не равны бесконености и при этом не являются числами
-        L = (~(DF_i2['predictor']==np.inf)
+        L = (~(DF_i2['predictor'] == np.inf)
              & (pd.to_numeric(DF_i2['predictor'], errors='coerce').isna())
-            )
-    
+             )
+
         DF_i2 = DF_i2.loc[L]
         # Объединение найденных значений в одну таблицу
         DF_i = DF_i1.append(DF_i2, ignore_index=True).drop_duplicates()
@@ -397,51 +396,55 @@ def woeTransformer(x, y,
             print('Возможно эти значения предиктора тоже являются категориальными:')
             display(DF_i)
     
-    try:
-        # Выделение числовых значений предиктора
-        DF_data_gr_2 = DF_data_gr.loc[~DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
+    
+    # Выделение числовых значений предиктора
+    DF_data_gr_num = DF_data_gr.loc[~DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
 
-        if DF_data_gr_2.shape[0] > 0:
-            DF_data_gr_2['predictor'] = DF_data_gr_2['predictor'].astype('float')
-        
+    if DF_data_gr_num.shape[0] > 0:
+        try:
+            DF_data_gr_num['predictor'] = DF_data_gr_num['predictor'].astype('float')
+
             # Определение тренда по числовым значениям
             DF_i = DF_data_i.loc[~DF_data_i['predictor'].isin(cat_values)]
             p = np.polyfit(DF_i['predictor'].astype('float'), DF_i['target'], deg=1)
             # Определение оптимальных границ групп
-            R_borders = monotonic_borders(DF_data_gr_2, p, min_sample_rate, min_count)
+            R_borders = monotonic_borders(DF_data_gr_num, p, min_sample_rate, min_count)
+        except:
+            print('Ошибка при расчете монотонных границ')
 
-            # Применение границ
-            DF_data_gr_2['groups'] = pd.cut(DF_data_gr_2['predictor'], [-np.inf] + R_borders + [np.inf])
-            DF_data_gr_2['type'] = 'num'
-        
+    # Применение границ
+    DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
+    DF_data_gr_num['type'] = 'num'
 
-        # Добавление данных по категориальным значениям
-        DF_data_gr_2k = DF_data_gr.loc[DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
-        DF_data_gr_2k['groups'] = DF_data_gr_2k['predictor'].copy()
-        DF_data_gr_2k['type'] = 'cat'
+    # Добавление данных по категориальным значениям
+    DF_data_gr_2k = DF_data_gr.loc[DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
+    DF_data_gr_2k['groups'] = DF_data_gr_2k['predictor'].copy()
+    DF_data_gr_2k['type'] = 'cat'
 
+    try:
         # Расчет статистики, WoE и IV по группам числовых значений
-        if DF_data_gr_2.shape[0] > 0:
-            DF_result = statistic(DF_data_gr_2.append(DF_data_gr_2k, ignore_index=True))
+        if DF_data_gr_num.shape[0] > 0:
+            DF_result = statistic(DF_data_gr_num.append(DF_data_gr_2k, ignore_index=True))
         else:
             DF_result = statistic(DF_data_gr_2k)
+    except:
+        print('Ошибка при расчете статистики')
 
-        # Проверка категориальных групп (категории, которые не удовлетворяют заданным ограничениям)
-        if verbose:
-            DF_j = DF_result.loc[(DF_result['sample_rate'] < min_sample_rate) 
-                             | (DF_result['target_count'] < min_count) 
-                             | (DF_result['sample_count'] 
+    # Проверка категориальных групп (категории, которые не удовлетворяют заданным ограничениям)
+    if verbose:
+        DF_j = DF_result.loc[(DF_result['sample_rate'] < min_sample_rate)
+                                | (DF_result['target_count'] < min_count)
+                                | (DF_result['sample_count']
                                 - DF_result['target_count'] < min_count)]
-            if DF_j.shape[0] > 0 :
-                print('Эти группы не удовлетворяют заданным ограничениям:')
-                display(DF_j)
+        if DF_j.shape[0] > 0:
+            print('Эти группы не удовлетворяют заданным ограничениям:')
+            display(DF_j)
         # Построение графика
         if plot:
             group_plot(DF_result)
 
-        return  DF_result
-    except:
-        print('Ошибка при выполнении группировки')
+        return DF_result
+
 		
 		
 def woe_apply(S_data, DF_groups):
