@@ -75,8 +75,10 @@ import pandas as pd
 import seaborn as sns
 
 from matplotlib import pyplot as plt
+from IPython.display import display
 from scipy.stats import sem
 from IPython.display import display
+
 
 # ## Функция улучшенная
 
@@ -106,13 +108,13 @@ def grouping(DF_data_i, low_acc=False):
     # Округение, если аргумент принимает допустимые значения
     if low_acc and type(low_acc) is int and low_acc > 0:
         DF_data_i = DF_data_i[['predictor', 'target']].round(low_acc)
-        
+
     # Группировка и расчет показателей
     DF_grouping = DF_data_i.groupby('predictor')['target'].agg(['count', 'sum']).reset_index()
     DF_grouping.columns = ['predictor', 'sample_count', 'target_count']
     DF_grouping['sample_rate'] = DF_grouping['sample_count'] / DF_grouping['sample_count'].sum()
     DF_grouping['target_rate'] = DF_grouping['target_count'] / DF_grouping['sample_count']
-    
+
     return DF_grouping
 
 
@@ -143,21 +145,22 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     """
     k01, k11 = (1, 1) if p[0] > 0 else (0, -1)
     R_borders = []
-    min_ind = 0 # минимальный индекс. Начальные условия
+    min_ind = 0  # минимальный индекс. Начальные условия
 
-    while min_ind < DF_grouping.shape[0]: # цикл по новым группам
+    while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
+        pd_gr_i = k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
 
         # Расчет показателей накопительным итогом
         DF_j = DF_grouping.loc[min_ind:]
         DF_iter = DF_j[['sample_rate', 'sample_count', 'target_count']].cumsum()
         DF_iter['non_target_count'] = DF_iter['sample_count'] - DF_iter['target_count']
         DF_iter['target_rate'] = DF_iter['target_count'] / DF_iter['sample_count']
-        
+
         # Проверка на соответствие критериям групп
-        DF_iter['check'] = ((DF_iter['sample_rate'] >= min_sample_rate - 10**-9)
-                           & (DF_iter['target_count'] >= min_count)
-                           & (DF_iter['non_target_count'] >= min_count))
-        
+        DF_iter['check'] = ((DF_iter['sample_rate'] >= min_sample_rate - 10 ** -9)
+                            & (DF_iter['target_count'] >= min_count)
+                            & (DF_iter['non_target_count'] >= min_count))
+
         # Расчет базы для проверки оптимальности границы
         # В зависимости от тренда считается скользящий _вперед_ минимум или максимум 
         # (в расчете участвуют все наблюдения от текущего до последнего)
@@ -165,32 +168,32 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
             DF_iter['pd_gr'] = DF_iter['target_rate'][::-1].rolling(len(DF_iter), min_periods=0).min()[::-1]
         else:
             DF_iter['pd_gr'] = DF_iter['target_rate'][::-1].rolling(len(DF_iter), min_periods=0).max()[::-1]
-        
+
         # Проверка оптимальности границы
         DF_iter['opt'] = DF_iter['target_rate'] == DF_iter['pd_gr']
         DF_iter = pd.concat([DF_j[['predictor']], DF_iter], axis=1)
         try:
             min_ind = DF_iter.loc[(DF_iter['check'] == True)
-                                  & (DF_iter['opt']==True)
-                                  , 'target_rate'].index.values[0]
+                                  & (DF_iter['opt'] == True)
+            , 'target_rate'].index.values[0]
             pd_gr_i = DF_iter.loc[min_ind, 'target_rate']
             score_j = DF_iter.loc[min_ind, 'predictor']
-            if len(R_borders) > 0 and score_j == R_borders[-1]: # Выход из цикла, если нет оптимальных границ
+            if len(R_borders) > 0 and score_j == R_borders[-1]:  # Выход из цикла, если нет оптимальных границ
                 break
         except:
             break
-        min_ind += 1        
+        min_ind += 1
         R_borders.append(score_j)
-    
+
     # Проверка последней добавленной группы
     DF_iter = DF_grouping.loc[DF_grouping['predictor'] > R_borders[-1]]
-    sample_rate_i = DF_iter['sample_rate'].sum() # доля выборки
-    sample_count_i = DF_iter['sample_count'].sum() # количество наблюдений
-    target_count_i = DF_iter['target_count'].sum() # количество целевых
-    non_target_count_i = sample_count_i - target_count_i # количество нецелевых
-    
+    sample_rate_i = DF_iter['sample_rate'].sum()  # доля выборки
+    sample_count_i = DF_iter['sample_count'].sum()  # количество наблюдений
+    target_count_i = DF_iter['target_count'].sum()  # количество целевых
+    non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
+
     if (sample_rate_i < min_sample_rate) or (target_count_i < min_count) or (non_target_count_i < min_count):
-        R_borders.remove(R_borders[-1]) # удаление последней границы
+        R_borders.remove(R_borders[-1])  # удаление последней границы
     return R_borders
 
 
@@ -214,31 +217,32 @@ def statistic(DF_groups):
             
     """
     nothing = 10 ** -6
-    DF_statistic = DF_groups[['sample_count', 'target_count', 'groups']].groupby('groups', as_index=False, sort=False).sum()
+    DF_statistic = DF_groups[['sample_count', 'target_count', 'groups']].groupby('groups', as_index=False,
+                                                                                 sort=False).sum()
     DF_statistic_min = DF_groups[['predictor', 'groups']].groupby('groups', as_index=False, sort=False).min()
     DF_statistic_max = DF_groups[['predictor', 'groups']].groupby('groups', as_index=False, sort=False).max()
     DF_statistic['min'] = DF_statistic_min['predictor']
     DF_statistic['max'] = DF_statistic_max['predictor']
     DF_statistic['sample_rate'] = DF_statistic['sample_count'] / DF_statistic['sample_count'].sum()
     DF_statistic['target_rate'] = DF_statistic['target_count'] / DF_statistic['sample_count']
-   
+
     # Расчет WoE и IV
     samples_num = DF_statistic['sample_count'].sum()
     events = DF_statistic['target_count'].sum()
     non_events = samples_num - events
-   
+
     DF_statistic['non_events_i'] = DF_statistic['sample_count'] - DF_statistic['target_count']
     DF_statistic['event_rate_i'] = DF_statistic['target_count'] / (events + nothing)
     DF_statistic['non_event_rate_i'] = DF_statistic['non_events_i'] / (non_events + nothing)
-   
-    DF_statistic['WOE'] = np.log(DF_statistic['non_event_rate_i'] 
+
+    DF_statistic['WOE'] = np.log(DF_statistic['non_event_rate_i']
                                  / (DF_statistic['event_rate_i'] + nothing)
                                  + nothing)
-                    
+
     DF_statistic['IV'] = DF_statistic['WOE'] * (DF_statistic['non_event_rate_i'] - DF_statistic['event_rate_i'])
-   
+
     DF_statistic = DF_statistic.merge(DF_groups[['type', 'groups']].drop_duplicates(), how='left', on='groups')
-   
+
     return DF_statistic
 
 
@@ -264,36 +268,36 @@ def group_plot(DF_result):
     """
     ## Расчеты
     sample_rate, target_rate, WOE = ['sample_rate', 'target_rate', 'WOE']
-    
-    x2 = [DF_result[sample_rate][:i].sum() 
-          for i in range(DF_result.shape[0])] + [1] # доля выборки с накоплением
-    x = [np.mean(x2[i:i + 2]) for i in range(len(x2) - 1)] # средняя точка в группах
-    
+
+    x2 = [DF_result[sample_rate][:i].sum()
+          for i in range(DF_result.shape[0])] + [1]  # доля выборки с накоплением
+    x = [np.mean(x2[i:i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
+
     # Выделение нужной информации для компактности
     woe = list(DF_result[WOE])
-    height = list(DF_result[target_rate])           # проблемность в группе
-    width = list(DF_result[sample_rate])            # доля выборки на группу
-    
+    height = list(DF_result[target_rate])  # проблемность в группе
+    width = list(DF_result[sample_rate])  # доля выборки на группу
+
     ## Визуализация
     fig, ax_pd = plt.subplots(figsize=(8, 5))
-    
+
     # Столбчатая диаграмма доли целевых в группах
-    bar_pd = ax_pd.bar(x=x, height=height, width=width, 
-                       color=[0, 122/255, 123/255], label='Группировка', 
+    bar_pd = ax_pd.bar(x=x, height=height, width=width,
+                       color=[0, 122 / 255, 123 / 255], label='Группировка',
                        alpha=0.7)
-    
+
     # График значений WOE по группам
-    ax_woe = ax_pd.twinx()                          # дубликат осей координат
-    line_woe = ax_woe.plot(x, woe, lw=2, 
-                           color=[37/255, 40/255, 43/255], 
+    ax_woe = ax_pd.twinx()  # дубликат осей координат
+    line_woe = ax_woe.plot(x, woe, lw=2,
+                           color=[37 / 255, 40 / 255, 43 / 255],
                            label='woe', marker='o')
-    
+
     # Линия нулевого значения WOE
-    line_0 = ax_woe.plot([0, 1], [0, 0], lw=1, 
-                         color=[37/255, 40/255, 43/255], linestyle='--')
-    
+    line_0 = ax_woe.plot([0, 1], [0, 0], lw=1,
+                         color=[37 / 255, 40 / 255, 43 / 255], linestyle='--')
+
     # Настройка осей координат
-    plt.xlim([0, 1])                            
+    plt.xlim([0, 1])
     plt.xticks(x2, [round(i, 2) for i in x2], fontsize=12)
     ax_pd.grid(True)
     ax_pd.set_xlabel('Доля выборки', fontsize=16)
@@ -311,14 +315,15 @@ def group_plot(DF_result):
     ax_woe.set_ylim([-max_woe, max_woe])
     ax_woe.set_yticks([round(i, 2) for i in np.linspace(-max_woe, max_woe, 11)])
     ax_woe.legend(loc=[0.6, -0.25], fontsize=14)
-    
+
     plt.title('Группировка предиктора', fontsize=18)
 
     # Для категориальных
     n_cat = DF_result.loc[DF_result['type'] == 'cat'].shape[0]
 
     if n_cat > 0:
-        bar_pd = ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color='m', label='Категориальные')
+        bar_pd = ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color='m',
+                           label='Категориальные')
         ax_pd.legend(loc=[0.15, -0.33], fontsize=14)
 
     plt.show()
@@ -411,6 +416,7 @@ def woeTransformer(x, y,
             R_borders = monotonic_borders(DF_data_gr_num, p, min_sample_rate, min_count)
         except:
             print('Ошибка при расчете монотонных границ')
+            return
         
         # Применение границ
         DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
@@ -429,6 +435,7 @@ def woeTransformer(x, y,
             DF_result = statistic(DF_data_gr_2k)
     except:
         print('Ошибка при расчете статистики')
+        return
 
     # Проверка категориальных групп (категории, которые не удовлетворяют заданным ограничениям)
     if verbose:
@@ -445,7 +452,6 @@ def woeTransformer(x, y,
 
         return DF_result
 
-		
 		
 def woe_apply(S_data, DF_groups):
     """
@@ -466,25 +472,24 @@ def woe_apply(S_data, DF_groups):
     """
     X_woe = S_data.copy()
     # Маппинги для замены групп на соответствующие значения WOE
-    num_map = {DF_groups.loc[i, 'groups']:DF_groups.loc[i, 'WOE'] 
-                   for i in DF_groups.index if DF_groups.loc[i, 'type']=='num'}
-    cat_map = {DF_groups.loc[i, 'groups']:DF_groups.loc[i, 'WOE'] 
-                   for i in DF_groups.index if DF_groups.loc[i, 'type']=='cat'}
+    num_map = {DF_groups.loc[i, 'groups']: DF_groups.loc[i, 'WOE']
+               for i in DF_groups.index if DF_groups.loc[i, 'type'] == 'num'}
+    cat_map = {DF_groups.loc[i, 'groups']: DF_groups.loc[i, 'WOE']
+               for i in DF_groups.index if DF_groups.loc[i, 'type'] == 'cat'}
     # Категориальные группы
-    cat_bounds = DF_groups.loc[DF_groups['type']=='cat', 'groups']
-
+    cat_bounds = DF_groups.loc[DF_groups['type'] == 'cat', 'groups']
 
     # predict по числовым значениям
     DF_num = DF_groups.loc[DF_groups['type'] == 'num']
     if DF_num.shape[0] > 0:
         # Границы (правые) интервалов для разбивки числовых переменных 
-        num_bounds = [-np.inf] + list(pd.IntervalIndex(DF_groups.loc[DF_groups['type']=='num', 'groups']).right)
+        num_bounds = [-np.inf] + list(pd.IntervalIndex(DF_groups.loc[DF_groups['type'] == 'num', 'groups']).right)
         # Выделение только числовых значений предиктора 
         # (похожих на числа и тех, что явно не указаны как категориальные)
         X_woe_num = X_woe[X_woe.astype(str)
-                               .str.replace('\.|\-','')
-                               .str.replace('e','').str.isdecimal() &
-                           (~X_woe.isin(cat_bounds))]
+                              .str.replace('\.|\-', '')
+                              .str.replace('e', '').str.isdecimal() &
+                          (~X_woe.isin(cat_bounds))]
         # Разбивка значений на интервалы в соответствии с группировкой
         X_woe_num = pd.cut(X_woe_num, num_bounds)
         # Замена групп на значения WOE 
@@ -493,17 +498,16 @@ def woe_apply(S_data, DF_groups):
     else:
         X_woe_num = pd.Series()
 
-
     # predict по категориальным значениям (может обновлять значения по числовым)
     DF_cat = DF_groups.loc[DF_groups['type'] == 'cat']
     if DF_cat.shape[0] > 0:
         # Выделение строковых значений и тех, что явно выделены как категориальные 
-        X_woe_cat = X_woe.drop(X_woe_num.index)
+        X_woe_cat = X_woe[X_woe.isin(cat_map.keys())]
         # Замена групп на значения WOE 
         X_woe_cat = X_woe_cat.replace(cat_map)
     else:
         X_woe_cat = pd.Series()
-        
+
     # predict по новым категориям (нечисловые: которых не было при групприровке)
     # Сбор индексов категориальных и числовых значений
     used_index = np.hstack([X_woe_cat.index, X_woe_num.index])
@@ -512,7 +516,7 @@ def woe_apply(S_data, DF_groups):
         X_woe_oth = pd.Series(0, index=X_woe_oth)
     else:
         X_woe_oth = pd.Series()
-		
+
     X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).sort_index()
 
     return X_woe
