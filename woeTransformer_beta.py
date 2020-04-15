@@ -496,7 +496,7 @@ def woe_apply(S_data, DF_groups):
     DF_cat = DF_groups.loc[DF_groups['type'] == 'cat']
     if DF_cat.shape[0] > 0:
         # Выделение строковых значений и тех, что явно выделены как категориальные 
-        X_woe_cat = X_woe.drop(X_woe_num.index)
+        X_woe_cat = X_woe[X_woe.isin(cat_map.keys())]
         # Замена групп на значения WOE 
         X_woe_cat = X_woe_cat.replace(cat_map)
     else:
