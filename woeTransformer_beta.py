@@ -76,6 +76,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from IPython.display import display
 from scipy.stats import sem
+from IPython.display import display
 
 
 # ## Функция улучшенная
@@ -414,10 +415,13 @@ def woeTransformer(x, y,
             R_borders = monotonic_borders(DF_data_gr_num, p, min_sample_rate, min_count)
         except:
             print('Ошибка при расчете монотонных границ')
-
-    # Применение границ
-    DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
-    DF_data_gr_num['type'] = 'num'
+            
+        try:
+            # Применение границ
+            DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
+            DF_data_gr_num['type'] = 'num'
+        except:
+            print('Ошибка при применении монотонных границ')
 
     # Добавление данных по категориальным значениям
     DF_data_gr_2k = DF_data_gr.loc[DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
@@ -431,7 +435,8 @@ def woeTransformer(x, y,
         else:
             DF_result = statistic(DF_data_gr_2k)
     except:
-        print('Ошибка при выполнении группировки')
+        print('Ошибка при расчете статистики')
+        
 
     # Проверка категориальных групп (категории, которые не удовлетворяют заданным ограничениям)
     if verbose:
@@ -446,10 +451,9 @@ def woeTransformer(x, y,
         if plot:
             group_plot(DF_result)
 
-        return DF_result
-    
+    return DF_result
 
-
+		
 def woe_apply(S_data, DF_groups):
     """
     Применение группировки и WoE-преобразования
@@ -499,7 +503,7 @@ def woe_apply(S_data, DF_groups):
     DF_cat = DF_groups.loc[DF_groups['type'] == 'cat']
     if DF_cat.shape[0] > 0:
         # Выделение строковых значений и тех, что явно выделены как категориальные 
-        X_woe_cat = X_woe.drop(X_woe_num.index)
+        X_woe_cat = X_woe[X_woe.isin(cat_map.keys())]
         # Замена групп на значения WOE 
         X_woe_cat = X_woe_cat.replace(cat_map)
     else:
