@@ -452,7 +452,7 @@ def woeTransformer(x, y,
         if plot:
             group_plot(DF_result)
 
-        return DF_result
+    return DF_result
 
 		
 def woe_apply(S_data, DF_groups):
