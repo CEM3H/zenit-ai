@@ -416,11 +416,13 @@ def woeTransformer(x, y,
             R_borders = monotonic_borders(DF_data_gr_num, p, min_sample_rate, min_count)
         except:
             print('Ошибка при расчете монотонных границ')
-            return
-        
-        # Применение границ
-        DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
-        DF_data_gr_num['type'] = 'num'
+            
+        try:
+            # Применение границ
+            DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
+            DF_data_gr_num['type'] = 'num'
+        except:
+            print('Ошибка при применении монотонных границ')
 
     # Добавление данных по категориальным значениям
     DF_data_gr_2k = DF_data_gr.loc[DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
@@ -435,7 +437,7 @@ def woeTransformer(x, y,
             DF_result = statistic(DF_data_gr_2k)
     except:
         print('Ошибка при расчете статистики')
-        return
+        
 
     # Проверка категориальных групп (категории, которые не удовлетворяют заданным ограничениям)
     if verbose:
