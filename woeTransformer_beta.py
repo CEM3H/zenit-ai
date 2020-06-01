@@ -68,6 +68,7 @@
 # Импорт библиотек
 import math
 import time
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -334,9 +335,11 @@ def woeTransformer(x, y,
                    cat_values=[],
                    min_sample_rate=0.05,
                    min_count=3,
+                   errors='skip',
                    low_accuracy=None,
                    plot=True,
-                   verbose=True):
+                   verbose=True,
+                   ):
     """
     Группировка значений предиктора, определение оптимальных границ и расчет WOE и IV
     
@@ -354,6 +357,11 @@ def woeTransformer(x, y,
                 Минимальный размер группы (доля от размера выборки)
         min_count : int, default 3
                 Минимальное количество наблюдений каждого класса в группе
+        errors : str, defaulf 'skip'
+                Способ обработки ошибок:
+                    'skip' - не возвращать ничего в случае ошибки
+                    'origin' - вернуть исходные значения предиктора
+                    'raise' - бросить исключение
         low_accuracy : int, default None
                 Режим пониженной точности (округление при группировке)
                 Если None, то предиктор не округляется.
@@ -370,6 +378,11 @@ def woeTransformer(x, y,
                 Таблица с итоговой группировкой и статистикой
                 
     """
+    if errors not in ['skip', 'raise']:
+        warnings.warn(f"Attribute `errors` must be one of ['skip', 'raise']. Passed {errors}.\n\
+                Defaulting to 'skip'")
+        errors = 'skip'
+
     # Обработка входных данных
     DF_data_i = pd.DataFrame({'predictor':x,
                               'target':y})
@@ -414,14 +427,20 @@ def woeTransformer(x, y,
             # Определение оптимальных границ групп
             R_borders = monotonic_borders(DF_data_gr_num, p, min_sample_rate, min_count)
         except:
-            print('Ошибка при расчете монотонных границ')
-            
+            if errors == 'raise':
+                raise ValueError('Ошибка при расчете монотонных границ')
+            else:
+                print('Ошибка при расчете монотонных границ')
+
         try:
             # Применение границ
             DF_data_gr_num['groups'] = pd.cut(DF_data_gr_num['predictor'], [-np.inf] + R_borders + [np.inf])
             DF_data_gr_num['type'] = 'num'
         except:
-            print('Ошибка при применении монотонных границ')
+            if errors == 'raise':
+                raise ValueError('Ошибка при применении монотонных границ')
+            else:
+                print('Ошибка при применении монотонных границ')
 
     # Добавление данных по категориальным значениям
     DF_data_gr_2k = DF_data_gr.loc[DF_data_gr['predictor'].isin(cat_values)].reset_index(drop=True)
