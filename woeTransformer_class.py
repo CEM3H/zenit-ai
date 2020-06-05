@@ -212,6 +212,7 @@ class WoeTransformer:
                     WoE = 0, если группа не встречалась в обучающей выборке
 
         """
+        orig_index = S_data.index
         X_woe = S_data.copy()
         DF_groups = self.stats.get_predictor(X_woe.name)
         # Маппинги для замены групп на соответствующие значения WOE
@@ -258,7 +259,7 @@ class WoeTransformer:
         else:
             X_woe_oth = pd.Series()
 
-        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).sort_index()
+        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).reindex(orig_index)
 
         return X_woe
     
@@ -617,5 +618,8 @@ class WoeTransformer:
         self.predictors = []
         
     def _get_nums_mask(self, x):
-        mask = pd.to_numeric(x, errors='coerce').notna()
+        if x.apply(lambda x:isinstance(x, str)).sum() == len(x):
+            return pd.Series(False, index=x.index)
+        else:
+            mask = pd.to_numeric(x, errors='coerce').notna()
         return mask
