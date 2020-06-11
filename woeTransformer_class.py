@@ -179,7 +179,7 @@ class WoeTransformer:
                 except Exception as e:
                     print(f'Transform failed on predictor: {i}', e)
             else:
-                print(f"Column not in fitted predictors list: {i}")             
+                print(f"Column is not in fitted predictors list: {i}")             
         return transformed
     
     def fit_transform(self, X, y, cat_values={}):
@@ -289,6 +289,8 @@ class WoeTransformer:
         res = pd.DataFrame()
         
         for i in X:
+            gr_subset_num = pd.DataFrame()
+            gr_subset_cat = pd.DataFrame()
             try:
                 cat_vals = self.cat_values.get(i, [])
                 nan_mask = X[i].isna()
@@ -310,19 +312,14 @@ class WoeTransformer:
                     # Применение границ к сгруппированным данным
                     gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
                     gr_subset_num['type'] = 'num'
-                else:
-                    gr_subset_num = pd.DataFrame()
-            except:
-                print(i)
-            
+            except np.linalg.LinAlgError as e:
+                print(f"Error in np.polyfit on predictor: '{i}'.\nError MSG: {e}")
             
             # Расчет коэффициентов тренда по категориальным значениям предиктора
             if (~num_mask).sum() > 0:
                 gr_subset_cat = gr_subset[~gr_subset['value'].isin(num_vals)].copy()
                 gr_subset_cat['groups'] = gr_subset_cat['value'].fillna('пусто')
                 gr_subset_cat['type'] = 'cat'
-            else:
-                gr_subset_cat = pd.DataFrame()
             
             # Объединение числовых и категориальных значений
             gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
