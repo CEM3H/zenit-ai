@@ -1,6 +1,15 @@
 """
 WOE-трансформер в виде класса с интерфейсом как в sklearn - с методами fit 
 и predict
+
+TODO:
+обработка серий наравне с датафреймами
+_grouping - обработка случаев, когда предикторпринимает только одно значение
+_monotonic_borders - обработка случаев: когда много пустых значений и доля непустых - меньше заданного min_sample_rate
+собработка исключений и сохранения статусов обучения
+собработка исключений и сохранения статусов преобразования
+предупреждения о сильных различиях в распределении трейна и теста
+
 """
 import math
 import time
@@ -161,15 +170,16 @@ class WoeTransformer:
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        if isinstance(X, pd.DataFrame):
-            for i in X:
-                if i in self.predictors:
+        if isinstance(X, pd.Series):
+            X = pd.DataFrame(X)
+        for i in X:
+            if i in self.predictors:
+                try:
                     transformed[i] = self._transform_single(X[i])
-                else:
-                    print(f"Column not in fitted predictors list: {i}") 
-        elif isinstance(X, pd.Series):
-            transformed = self._transform_single(X)
-            
+                except Exception as e:
+                    print(f'Transform failed on predictor: {i}', e)
+            else:
+                print(f"Column not in fitted predictors list: {i}")             
         return transformed
     
     def fit_transform(self, X, y, cat_values={}):
@@ -277,29 +287,33 @@ class WoeTransformer:
         self.trend_coefs = {}
         self.borders = {}
         res = pd.DataFrame()
+        
         for i in X:
-            cat_vals = self.cat_values.get(i, [])
-            nan_mask = X[i].isna()
-            num_mask = self._get_nums_mask(X[i]) & (~X[i].isin(cat_vals)) & (~nan_mask)
-            num_vals = X.loc[num_mask, i].unique()
-            gr_subset = (self.grouped.get_predictor(i))
+            try:
+                cat_vals = self.cat_values.get(i, [])
+                nan_mask = X[i].isna()
+                num_mask = self._get_nums_mask(X[i]) & (~X[i].isin(cat_vals)) & (~nan_mask)
+                num_vals = X.loc[num_mask, i].unique()
+                gr_subset = (self.grouped.get_predictor(i))
 
-            # Расчет коэффициентов тренда по числовым значениям предиктора
-            if num_mask.sum() > 0:
-                self.trend_coefs.update({i: np.polyfit(X.loc[num_mask, i].astype(float), 
-                                                       y.loc[num_mask], 
-                                                       deg=1)})
-                # Расчет монотонных границ
-                gr_subset_num = gr_subset[gr_subset['value'].isin(num_vals)].copy()
-                gr_subset_num['value'] = pd.to_numeric(gr_subset_num['value'])
-                borders = self._monotonic_borders(gr_subset_num, 
-                                                  self.trend_coefs[i])
-                self.borders.update({i:borders})
-                # Применение границ к сгруппированным данным
-                gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
-                gr_subset_num['type'] = 'num'
-            else:
-                gr_subset_num = pd.DataFrame()
+                # Расчет коэффициентов тренда по числовым значениям предиктора
+                if num_mask.sum() > 0:
+                    self.trend_coefs.update({i: np.polyfit(X.loc[num_mask, i].astype(float), 
+                                                        y.loc[num_mask], 
+                                                        deg=1)})
+                    # Расчет монотонных границ
+                    gr_subset_num = gr_subset[gr_subset['value'].isin(num_vals)].copy()
+                    gr_subset_num['value'] = pd.to_numeric(gr_subset_num['value'])
+                    borders = self._monotonic_borders(gr_subset_num, 
+                                                    self.trend_coefs[i])
+                    self.borders.update({i:borders})
+                    # Применение границ к сгруппированным данным
+                    gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
+                    gr_subset_num['type'] = 'num'
+                else:
+                    gr_subset_num = pd.DataFrame()
+            except:
+                print(i)
             
             
             # Расчет коэффициентов тренда по категориальным значениям предиктора
@@ -383,7 +397,7 @@ class WoeTransformer:
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
             pd_gr_i = k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
-
+            
             # Расчет показателей накопительным итогом
             DF_j = DF_grouping.loc[min_ind:]
             DF_iter = DF_j[['sample_rate', 'sample_count', 'target_count']].cumsum()
