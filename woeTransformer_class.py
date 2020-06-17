@@ -128,6 +128,8 @@ class WoeTransformer:
         # Поиск потенциальных групп
         # Поиск "плохих" групп
         self._get_bad_groups()
+
+        return self
    
     
     def plot_woe(self, predictors=None):
