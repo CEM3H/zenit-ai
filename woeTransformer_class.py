@@ -21,8 +21,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.base import TransformerMixin, BaseEstimator
 
-class WoeTransformer:
+
+class WoeTransformer(TransformerMixin, BaseEstimator):
     """
     Класс для построения и применения WOE группировки к датасету
     
@@ -85,6 +87,9 @@ class WoeTransformer:
                 return self[self['predictor'].isin(x)]
             else:
                 return self[self['predictor'] == x] 
+    
+    def __repr__(self):
+        return "WoeTransformer(min_sample_rate=%r, min_count=%r, n_fitted_predictors=%r)" % (self.min_sample_rate, self.min_count, len(self.predictors))
     
     def __init__(self, min_sample_rate=0.05, min_count=3):
         """
@@ -181,7 +186,7 @@ class WoeTransformer:
                 try:
                     transformed[i] = self._transform_single(X[i])
                 except Exception as e:
-                    print(f'Transform failed on predictor: {i}', e)
+                    print('Transform failed on predictor: {i}'.format(i), e)
             else:
                 print(f"Column is not in fitted predictors list: {i}")             
         return transformed
@@ -274,6 +279,7 @@ class WoeTransformer:
             X_woe_oth = pd.Series()
 
         X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).reindex(orig_index)
+        X_woe = pd.to_numeric(X_woe, downcast='signed')
 
         return X_woe
     
@@ -472,7 +478,7 @@ class WoeTransformer:
         for col in df.columns[:-1]:
             grouped_temp = df.groupby(col)['target'].agg(['count', 'sum']).reset_index()
             grouped_temp.columns = ['value', 'sample_count', 'target_count']
-            grouped_temp['sample_rate'] = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum()
+            grouped_temp['sample_rate'] = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum() 
             grouped_temp['target_rate'] = grouped_temp['target_count'] / grouped_temp['sample_count']
             grouped_temp.insert(0, 'predictor', col)
             self.grouped = self.grouped.append(grouped_temp)
@@ -615,7 +621,7 @@ class WoeTransformer:
         ax_woe.legend(bbox_to_anchor=(1.05, .92), loc=[0.6, -0.25], fontsize=14)
         
 
-        plt.title(f'Группировка предиктора {stats.loc[0, "predictor"]}', fontsize=18)
+        plt.title('Группировка предиктора {}'.format(stats.loc[0, "predictor"]), fontsize=18)
 
         # Для категориальных
         n_cat = stats.loc[stats['type'] == 'cat'].shape[0]
