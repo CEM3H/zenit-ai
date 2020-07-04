@@ -1,36 +1,115 @@
-"""
-WOE-трансформер в виде класса с интерфейсом как в sklearn - с методами fit 
-и predict
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: all
+#     notebook_metadata_filter: all,-language_info
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.3.2
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+#   toc:
+#     base_numbering: 1
+#     nav_menu: {}
+#     number_sections: false
+#     sideBar: true
+#     skip_h1_title: false
+#     title_cell: Table of Contents
+#     title_sidebar: Contents
+#     toc_cell: false
+#     toc_position: {}
+#     toc_section_display: true
+#     toc_window_display: false
+# ---
 
-TODO:
-обработка серий наравне с датафреймами
-_grouping - обработка случаев, когда предиктор принимает только одно значение и есть пропуски
-_grouping - обработка случаев, когда предиктор принимает только одно значение и НЕТ пропусков (сейчас должно падать)
-_monotonic_borders - обработка случаев: когда много пустых значений и доля непустых - меньше заданного min_sample_rate
-обработка исключений и сохранения статусов обучения
-обработка исключений и сохранения статусов преобразования
-предупреждения о сильных различиях в распределении трейна и теста
-Актуализировать и дополнить документацию
-добавить регуляризацию IV
-
-"""
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:50.988629Z", "start_time": "2020-04-28T06:15:49.240979Z"}
 import math
 import time
 
+import sys
+sys.path.insert(0, 'K:\ДМиРТ\Управление моделирования\#Zenit.ai')
+
+import woeTransformer as woe_vanilla
+import woeTransformer_beta as woe_new
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-import sklearn as sk
-from sklearn.base import TransformerMixin, BaseEstimator
+
+# %% [markdown]
+# ## Данные для теста
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.022760Z", "start_time": "2020-04-28T06:15:50.989632Z"} code_folding=[]
+np.random.seed(42)
+# Датасет для обучения
+df_0 = pd.DataFrame({'digits':np.random.choice(range(10), 10000),
+                     'nums':np.random.choice(range(100), 10000),
+                     'nums_w_neg':np.random.choice(range(-50, 51), 10000),
+                     'nums_w_small_cat':np.hstack((np.array(np.random.choice(range(10), 9990), float),
+                                                   [100]*10)),
+                     'nums_w_na':np.hstack((np.array(np.random.choice(range(10), 9000), float),
+                                                     np.full(1000, np.nan))),
+                     'nums_w_letters':np.hstack((np.random.choice(range(10), 9000),
+                                                 np.array(['d', 'f']*500))),
+                     'nums_w_letters_obj':np.hstack((np.array(np.random.choice(range(10), 9000), int),
+                                                     np.array(['d', 'f']*500, object))),
+                     'letters':np.random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 10000),
+                     'letters_uneq_freq': np.random.choice(['a', 'b', 'c'], 10000, p=[0.6, 0.3, 0.1]),
+                     'letters_w_na':np.hstack((np.array(np.random.choice(['a', 'b', 'c'], 9000), object),
+                                               np.full(1000, np.nan))),
+                     'single_num': np.ones(10000)
+                     'target':np.random.choice(range(2), 10000)})
+
+# Датасет для применения группировки
+df_0_test = pd.DataFrame({'digits':np.random.choice(range(10), 10000,
+                                                    p=[.15,.15,.05,.05, .1,.1,.1,.01,.19,.1]),   #изменены веса
+                         'nums':np.random.choice(range(100), 10000),
+                         'nums_w_neg':np.random.choice(range(-100, 101), 10000),                 #изменен диапазон значений
+                         'nums_w_small_cat':np.hstack((np.array(np.random.choice(range(10), 9990), float),
+                                                       [100]*10)),
+                         'nums_w_na':np.hstack((np.array(np.random.choice(range(10), 8000), float),
+                                                         np.full(2000, np.nan))),                # увеличено кол-во пустышек
+                         'nums_w_letters':np.hstack((np.random.choice(range(10), 9000),
+                                                     np.array(['d', 'X']*500))),                 # одна категория заменена
+                         'nums_w_letters_obj':np.hstack((np.array(np.random.choice(range(10), 9000), int),
+                                                         np.array(['d', 'f', 'y', 'z']*250, object))),   # добавлены 2 новых 
+                         'letters':np.random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 10000),
+                         'letters_uneq_freq': np.random.choice(['a', 'b', 'c'], 10000, p=[0.1, 0.6, 0.3]),   #изменены веса
+                         'letters_w_na':np.hstack((np.array(np.random.choice(['a', 'b', 'c', 'd'], 9000), object),
+                                                   np.full(1000, np.nan))), #добавлена категория
+                         'letters_crazy':['XYZ']*10000,
+                         'target':np.random.choice(range(2), 10000)})
 
 
+# %% [markdown]
+# ## Класс
 
+# %% [markdown]
+# ### Особенности класса
 
+# %% [markdown]
+# * поддерживает методы `fit` / `transform`/ `fit_transform`
+# * позволяет отрисовывать графики по одной, нескольким или по всем преобразованным переменным
+# * обрабатывает пропущенные значения как отдельную категорию
+# * хранит итоговую таблицу с результатами групировки всех предикторов
+# * хранит дополнительную информацию о преобразовании каждого предиктора
+#     * список сгруппированных предикторов
+#     * указанные при обучении категориальные значения 
+#     * значения, которые могут являться категориями
+#     * группы, не удовлетворяющие заданным условиям
+#     * монотонные границы (для тех признаков, по которым удалось построить границы)
+#     * коэффициенты тренда (для тех признаков, по которым удалось построить границы)
 
+# %% [markdown]
+# ### Сам класс
+#
 
-
-class WoeTransformer(TransformerMixin, BaseEstimator):
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.081879Z", "start_time": "2020-04-28T06:15:51.023725Z"} code_folding=[41, 109, 135, 162, 187, 252, 336, 345, 419, 458, 506, 522]
+class WoeTransformer:
     """
     Класс для построения и применения WOE группировки к датасету
     
@@ -94,9 +173,6 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             else:
                 return self[self['predictor'] == x] 
     
-    def __repr__(self):
-        return "WoeTransformer(min_sample_rate=%r, min_count=%r, n_fitted_predictors=%r)" % (self.min_sample_rate, self.min_count, len(self.predictors))
-    
     def __init__(self, min_sample_rate=0.05, min_count=3):
         """
         Инициализация экземпляра класса
@@ -111,9 +187,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.min_sample_rate = min_sample_rate
         self.min_count = min_count
         self.predictors = []
-        self.alpha_values = {}   
+#         self.detect_categories = detect_categories   
     
-    def fit(self, X, y, cat_values={}, alpha_values={}):
+    def fit(self, X, y, cat_values={}):
         """
         Обучение трансформера и расчет всех промежуточных данных
         
@@ -131,21 +207,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
-        # Сохранение категориальных знаений
         self.cat_values = cat_values
-        # Инициализация коэффициентов для регуляризации групп
-        self.alpha_values = {i:0 for i in X.columns}
-        self.alpha_values.update(alpha_values)  
-
         # Агрегация значений предикторов
         self._grouping(X, y)
         # Расчет WOE и IV
         self._fit_numeric(X, y)
         # Поиск потенциальных групп
+        self._get_possible_groups()
         # Поиск "плохих" групп
         self._get_bad_groups()
-
-        return self
    
     
     def plot_woe(self, predictors=None):
@@ -190,16 +260,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        if isinstance(X, pd.Series):
-            X = pd.DataFrame(X)
-        for i in X:
-            if i in self.predictors:
-                try:
+        if isinstance(X, pd.DataFrame):
+            for i in X:
+                if i in self.predictors:
                     transformed[i] = self._transform_single(X[i])
-                except Exception as e:
-                    print('Transform failed on predictor: {i}'.format(i), e)
-            else:
-                print(f"Column is not in fitted predictors list: {i}")             
+                else:
+                    print(f"Column not in fitted predictors list: {i}") 
+        elif isinstance(X, pd.Series):
+            transformed = self._transform_single(X)
+            
         return transformed
     
     def fit_transform(self, X, y, cat_values={}):
@@ -242,7 +311,6 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     WoE = 0, если группа не встречалась в обучающей выборке
 
         """
-        orig_index = S_data.index
         X_woe = S_data.copy()
         DF_groups = self.stats.get_predictor(X_woe.name)
         # Маппинги для замены групп на соответствующие значения WOE
@@ -289,66 +357,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         else:
             X_woe_oth = pd.Series()
 
-        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).reindex(orig_index)
-        X_woe = pd.to_numeric(X_woe, downcast='signed')
+        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).sort_index()
 
         return X_woe
-
-    def _fit_single(self, x, y):
-        """
-        Расчет WOE и IV
-        
-        Входные данные:
-        ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
-            col : str
-                    Предиктор
-        """
-        gr_subset_num = pd.DataFrame()
-        gr_subset_cat = pd.DataFrame()
-        col = x.name
-
-        cat_vals = self.cat_values.get(col, [])
-        nan_mask = x.isna()
-        num_mask = self._get_nums_mask(x) & (~x.isin(cat_vals)) & (~nan_mask)
-        num_vals = x.loc[num_mask].unique()
-        gr_subset = (self.grouped.get_predictor(col))
-        try:        
-            # Расчет коэффициентов тренда по числовым значениям предиктора
-            if num_mask.sum() > 0:
-                self.trend_coefs.update({col: np.polyfit(x.loc[num_mask].astype(float), 
-                                                    y.loc[num_mask], 
-                                                    deg=1)})
-                # Расчет монотонных границ
-                gr_subset_num = gr_subset[gr_subset['value'].isin(num_vals)].copy()
-                gr_subset_num['value'] = pd.to_numeric(gr_subset_num['value'])
-                borders = self._monotonic_borders(gr_subset_num, 
-                                                self.trend_coefs[col])
-                self.borders.update({col:borders})
-                # Применение границ к сгруппированным данным
-                gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
-                gr_subset_num['type'] = 'num'
-        except np.linalg.LinAlgError as e:
-            print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
-        
-        # Расчет коэффициентов тренда по категориальным значениям предиктора
-        if (~num_mask).sum() > 0:
-            gr_subset_cat = gr_subset[~gr_subset['value'].isin(num_vals)].copy()
-            gr_subset_cat['groups'] = gr_subset_cat['value'].fillna('пусто')
-            gr_subset_cat['type'] = 'cat'
-        
-        
-        # Объединение числовых и категориальных значений
-        gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
-
-        res_i = self._statistic(gr_subset)
-        res_i['groups'].replace({'пусто':np.nan}, inplace=True) 
-
-        return res_i
-
+    
     def _fit_numeric(self, X, y):
         """
         Расчет WOE и IV
@@ -360,13 +372,51 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             y : pd.Series
                     Целевая переменная
         """
-        
+        self.trend_coefs = {}
+        self.borders = {}
         res = pd.DataFrame()
-        
         for i in X:
-            res_i = self._fit_single(X[i], y)
+            cat_vals = self.cat_values.get(i, [])
+            nan_mask = X[i].isna()
+            num_mask = self._get_nums_mask(X[i]) & (~X[i].isin(cat_vals)) & (~nan_mask)
+            num_vals = X.loc[num_mask, i].unique()
+            gr_subset = (self.grouped.get_predictor(i))
+
+            # Расчет коэффициентов тренда по числовым значениям предиктора
+            if num_mask.sum() > 0:
+                self.trend_coefs.update({i: np.polyfit(X.loc[num_mask, i].astype(float), 
+                                                       y.loc[num_mask], 
+                                                       deg=1)})
+                # Расчет монотонных границ
+                gr_subset_num = gr_subset[gr_subset['value'].isin(num_vals)].copy()
+                gr_subset_num['value'] = pd.to_numeric(gr_subset_num['value'])
+                borders = self._monotonic_borders(gr_subset_num, 
+                                                  self.trend_coefs[i])
+                self.borders.update({i:borders})
+                # Применение границ к сгруппированным данным
+                gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
+                gr_subset_num['type'] = 'num'
+            else:
+                gr_subset_num = pd.DataFrame()
+            
+            
+            # Расчет коэффициентов тренда по категориальным значениям предиктора
+            if (~num_mask).sum() > 0:
+                gr_subset_cat = gr_subset[~gr_subset['value'].isin(num_vals)].copy()
+                gr_subset_cat['groups'] = gr_subset_cat['value'].fillna('пусто')
+                gr_subset_cat['type'] = 'cat'
+            else:
+                gr_subset_cat = pd.DataFrame()
+            
+            # Объединение числовых и категориальных значений
+            gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
+
+            res_i = self._statistic(gr_subset)
+            res_i['groups'].replace({'пусто':np.nan}, inplace=True) 
+            
             res = res.append(res_i)
             self.predictors.append(i)
+            
         self.stats = res
         self.stats = self._GroupedPredictor(self.stats)
         
@@ -431,7 +481,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
             pd_gr_i = k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
-            
+
             # Расчет показателей накопительным итогом
             DF_j = DF_grouping.loc[min_ind:]
             DF_iter = DF_j[['sample_rate', 'sample_count', 'target_count']].cumsum()
@@ -479,7 +529,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
 
-    def _group_single(self, x, y, alpha=0):
+    def _grouping(self, X, y):
         """
         Агрегация данных по значениям предиктора. 
         Рассчитывает количество наблюдений,
@@ -495,39 +545,19 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Целевая переменная
 
         """
-        col = x.name
-        df = pd.DataFrame({col: x.values,
-                           'target':y.values})
-        grouped_temp = df.groupby(col)['target'].agg(['count', 'sum']).reset_index()
-        grouped_temp.columns = ['value', 'sample_count', 'target_count']
-        grouped_temp['sample_rate'] = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum() 
-        grouped_temp['target_rate'] = grouped_temp['target_count'] / grouped_temp['sample_count']
-        grouped_temp.insert(0, 'predictor', col)
-
-        # расчет оптимальной целевой для группы, формула и детали в видео
-        # https://www.youtube.com/watch?v=g335THJxkto&list=PLLIunAIxCvT8ZYpC6-X7H0QfAQO9H0f-8&index=12&t=0s
-        # pd = (y_local * K + Y_global * alpha) / (K + alpha)
-        Y_global = y.mean()
-        K = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum()
-        grouped_temp['target_rate'] = (grouped_temp['target_rate'] * K + Y_global * alpha) / (K + alpha)
-        grouped_temp['target_count'] = np.floor(grouped_temp['sample_count'] * grouped_temp['target_rate']).astype(int)
-
-        return grouped_temp
-
-    def _grouping(self, X, y):
-        """
-        Применение группировки ко всем предикторам
-        """
                  
         df = X.copy()
-        df = df.fillna('пусто')
+        df.fillna('пусто', inplace=True)
         df['target'] = y.copy()
         self.grouped = pd.DataFrame()
 
         # Группировка и расчет показателей
         for col in df.columns[:-1]:
-            alpha = self.alpha_values.get(col, 0)
-            grouped_temp = self._group_single(df[col], y, alpha)
+            grouped_temp = df.groupby(col)['target'].agg(['count', 'sum']).reset_index()
+            grouped_temp.columns = ['value', 'sample_count', 'target_count']
+            grouped_temp['sample_rate'] = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum()
+            grouped_temp['target_rate'] = grouped_temp['target_count'] / grouped_temp['sample_count']
+            grouped_temp.insert(0, 'predictor', col)
             self.grouped = self.grouped.append(grouped_temp)
         
         # Замена пустых значений обратно на np.nan ИЛИ преобразование в числовой тип
@@ -668,7 +698,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         ax_woe.legend(bbox_to_anchor=(1.05, .92), loc=[0.6, -0.25], fontsize=14)
         
 
-        plt.title('Группировка предиктора {}'.format(stats.loc[0, "predictor"]), fontsize=18)
+        plt.title(f'Группировка предиктора {stats.loc[0, "predictor"]}', fontsize=18)
 
         # Для категориальных
         n_cat = stats.loc[stats['type'] == 'cat'].shape[0]
@@ -682,191 +712,262 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
    
     # Служебные функции
     def _reset_state(self):
-        self.trend_coefs = {}
-        self.borders = {}
         self.cat_values = {}
         self.predictors = []
         
     def _get_nums_mask(self, x):
-        if x.apply(lambda x:isinstance(x, str)).sum() == len(x):
-            return pd.Series(False, index=x.index)
-        else:
-            mask = pd.to_numeric(x, errors='coerce').notna()
+        mask = pd.to_numeric(x, errors='coerce').notna()
         return mask
+    
 
+# %% [markdown]
+# ## Инициализация и обучение группировки на датасете
 
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.092942Z", "start_time": "2020-04-28T06:15:51.082882Z"} code_folding=[] scrolled=false
+# Инициализация класса и вывод начальных параметров
+woe = WoeTransformer()
+print('Min sample rate:', woe.min_sample_rate)
+print('Min count:', woe.min_count)
+print('Fitted predictors:', woe.predictors)
 
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.801704Z", "start_time": "2020-04-28T06:15:51.094415Z"}
+# Обучение трансформера - получение группировки и сопутсвующей информации 
+woe.fit(df_0.iloc[:, :-1], df_0['target'], cat_values={'nums_w_small_cat':[100]})
 
+# %% [markdown]
+# ## Результаты группировки
 
-class WoeTransformerRegularized(WoeTransformer):
-    def __init__(self, min_sample_rate=0.05, min_count=3, alphas=[0], n_seeds=100):
-        """
-        Инициализация экземпляра класса
-        
-        Параметры:
-        ----------
-            min_sample_rate : float, default 0.05
-                    Минимальный размер группы (доля от размера выборки)
-            min_count : int, default 3
-                    Минимальное количество наблюдений каждого класса в группе
-        """
-        self.min_sample_rate = min_sample_rate
-        self.min_count = min_count
-        self.predictors = []
-        self.alphas = alphas
-        self.alpha_values = {}
-        self.n_seeds = n_seeds
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.807721Z", "start_time": "2020-04-28T06:15:51.802707Z"}
+print('Сгруппированные предикторы:\n')
+woe.predictors
 
-    def fit(self, X, y, cat_values={}):
-        """
-        Обучение трансформера и расчет всех промежуточных данных
-        
-        Входные данные:
-        ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
-            cat_values : dict, optional
-                    Словарь списков с особыми значениями, которые нужно 
-                    выделить в категории
-                    По умолчанию все строковые и пропущенные значения 
-                    выделяются в отдельные категории
-        """
-        # Сброс текущего состояния трансформера
-        self._reset_state()
-        self.grouped = pd.DataFrame()
-        self.stats = pd.DataFrame()
-        self.cat_values = cat_values
-        # Агрегация значений предикторов
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.817245Z", "start_time": "2020-04-28T06:15:51.809224Z"}
+print('Категориальные значения предикторов:\n')
+woe.cat_values
 
-        for col in X.columns:
-            temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, self.alphas, self.n_seeds)
-            self.alpha_values.update({col:temp_alpha})
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.824265Z", "start_time": "2020-04-28T06:15:51.819251Z"}
+print('Коэффиценты тренда числовых переменных:')
+woe.trend_coefs
 
-        # self._grouping(X, y)    
-        # Расчет WOE и IV
-        self._fit_numeric(X, y)
-        # Поиск потенциальных групп 
-        # Поиск "плохих" групп
-        self._get_bad_groups()
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.831285Z", "start_time": "2020-04-28T06:15:51.826271Z"}
+print('Монотонные границы:')
+woe.borders
 
-        return self
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.851338Z", "start_time": "2020-04-28T06:15:51.833291Z"} scrolled=true
+print('Возможные категории:')
+woe.possible_groups
 
-   
-    def _cat_features_alpha_logloss(self, x, y, alpha, seed=100):
-        """
-        функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
-        
-        """
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.861364Z", "start_time": "2020-04-28T06:15:51.852340Z"}
+print('Категории: не удовлетворяющие условиям:')
+woe.bad_groups
 
-        predictor = x.name
-        target = y.name
-        df = pd.DataFrame({predictor: x.values,
-                           target: y.values})
-        df[predictor] = df[predictor].fillna('NO_INFO')
-        L_logloss_mean = []
-        GINI_IV_mean = []
-        for alpha_i in alpha:
-            logloss_i = []
-            GINI_i = []
-            IV_i = []
-            for seed_i in range(seed):
-                X_train, X_test, y_train, y_test = sk.model_selection.train_test_split(x, y, 
-                                                        test_size=0.3, random_state=seed_i, stratify=y)
-                # X_train = pd.DataFrame(X_train)
-                X_test = pd.DataFrame(X_test)
-                # X_train[target] = y_train
-                X_test[target] = y_test
-                X_test_WOE = pd.DataFrame()
-                X_test_WOE['Target'] = X_test[target]
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.872394Z", "start_time": "2020-04-28T06:15:51.862366Z"}
+print('Агрегированные значения предикторов:')
+print('Размерность:', woe.grouped.shape)
+woe.grouped.head()
 
-                df_i = self._group_single(X_train, y_train, alpha_i)
-                df_i['groups'] = df_i['value'].fillna('пусто')
-                df_i['type'] = 'cat'
-                self.grouped = self.grouped.append(df_i)
-                
-                        
-                # grouped_temp = pd.crosstab(X_train[predictor], X_train[target], normalize=False, margins='index')
-                # grouped_temp.rename(columns={'All':'Values', 1:'Target_cnt'}, inplace=True)
-                # grouped_temp['Target'] = grouped_temp['Target_cnt'] / grouped_temp['Values']
-                # grouped_temp['Non Target'] = 1 - grouped_temp['Target']
-                # grouped_temp = grouped_temp[['Non Target', 'Target', 'Values', 'Target_cnt']].drop('All').reset_index()
-                # grouped_temp.columns = grouped_temp.columns.rename('')
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:51.894452Z", "start_time": "2020-04-28T06:15:51.875404Z"}
+print('Результаты WOE-группировки:')
+woe.stats
 
-                
-                # # расчет оптимальной целевой для группы, формула и детали в видео
-                # # https://www.youtube.com/watch?v=g335THJxkto&list=PLLIunAIxCvT8ZYpC6-X7H0QfAQO9H0f-8&index=12&t=0s
-                # # pd = (y_local * K + Y_global * alpha) / (K + alpha)
-                # Y_global = y_train.mean()
-                # K = grouped_temp['Values'] / grouped_temp['Values'].sum()
-                # grouped_temp['Target_transformed'] = (grouped_temp['Target'] * K + Y_global * alpha_i) / (K + alpha_i)
-                # grouped_temp['Target_cnt_transformed'] = np.floor(grouped_temp['Values'] * grouped_temp['Target_transformed']).astype(int)
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:52.100950Z", "start_time": "2020-04-28T06:15:51.895454Z"}
+print('График отдельного предиктора')
+woe.plot_woe('letters_uneq_freq')
 
-                # # если пустых значений = 1 - необходимо добавить в таблицу это значение
-                # if 'NO_INFO' not in grouped_temp[predictor].values:
-                #     grouped_temp = grouped_temp.append({predictor : 'NO_INFO',
-                #                     'Non Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 0)].shape[0],
-                #                     'Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 1)].shape[0],
-                #                     'Values' : df[(df[predictor] == 'NO_INFO')].shape[0],
-                #                     'Target_cnt' : df[(df[predictor] == 'NO_INFO') & (df[target] == 1)].shape[0],
-                #                     'Target_transformed' : X_train[target].mean(),
-                #                     'Target_cnt_transformed' : (df[(df[predictor] == 'NO_INFO')].shape[0]) * X_train[target].mean()
-                #                 }, ignore_index=True)
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:54.893306Z", "start_time": "2020-04-28T06:15:52.102130Z"} scrolled=true
+print('Все графики')
+woe.plot_woe()
 
-                # grouped_temp.sort_values(by = 'Values', inplace=True, ascending=False)
-                # grouped_temp = grouped_temp.reset_index(drop=True)
-                # order = list(grouped_temp[predictor])
+# %% [markdown]
+# ## Обучение с указанием категориальных переменных
 
-                # # расчет WOE и IV на Train
-                # df_i = grouped_temp[['Values', 'Target_cnt_transformed', predictor]]
-                # df_i.rename(columns={'Values' : 'sample_count', 
-                #                     'Target_cnt_transformed' : 'target_count',
-                #                     predictor : 'groups'}, inplace=True)
-                # df_i['predictor'] = predictor
-                # df_i['type'] = 'cat'
+# %% [markdown]
+# Особые категории передаются с помощью словаря списков
 
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:54.904363Z", "start_time": "2020-04-28T06:15:54.894344Z"}
+df_0.head()
 
-                WOE_i = self._statistic(df_i)
-                self.stats = self.stats.append(WOE_i)
-                # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма 
-                # по рассчитанным WOE из IVWOE
-                def calc_woe_i(row_value):
-                    if row_value not in WOE_i['groups']:
-                        return 0
-                    else:
-                        i = 0
-                        while row_value not in WOE_i['groups'][i]: i += 1
-                        return WOE_i['WOE'][i]
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:55.535248Z", "start_time": "2020-04-28T06:15:54.906343Z"}
+# Обучение трансформера - получение группировки и сопутсвующей информации 
+woe = WoeTransformer()
+try: 
+    woe.cat_values
+except AttributeError: 
+    print('Категориальные значения не определены')
+woe.fit(df_0.iloc[:, :-1], df_0['target'], cat_values={'nums_w_small_cat':[100],
+                                                       'nums_w_neg':[-1, -11],
+                                                       'nums_w_na':[1,3,5],
+                                                       'nums_w_letters':[100],  # такого значеня в предиторке нет
+                                                       },)
+woe.cat_values
 
-                X_test_WOE['WOE'] = X_test[predictor].apply(calc_woe_i)
-                roc_auc_i = sk.metrics.roc_auc_score(X_test_WOE['Target'], X_test_WOE['WOE'])
-                
-                X_test = pd.merge(X_test, df_i[['groups', 'target_rate']].rename(columns={'groups':predictor}), 
-                                    how='left', on=predictor)
-                #print(X_test[X_test['Target_transformed'].isna()])
-                
-    #             print(seed_i)
-    #             print(X_test['Target_transformed'].isnull().sum())
-    #             print(X_test['Target_transformed'].loc[X_test['Target_transformed'].isnull()])
-    #             print(np.isinf(X_test['Target_transformed']).sum())
-                
-    #             logloss_i.append(log_loss(X_test[target], X_test['Target_transformed']))
-                logloss_i.append(sk.metrics.log_loss(X_test[target], X_test['target_rate'].fillna(0)))
-                IV_i.append(WOE_i['IV'].sum())
-                GINI_i.append(abs(2 * roc_auc_i - 1))
-                
-            L_logloss_mean.append([alpha_i, np.mean(logloss_i)])
-            
-            GINI_IV_mean.append([alpha_i, np.mean(GINI_i), np.mean(IV_i)])
-            
-        df_cat_features_alpha_GINI_IV = pd.DataFrame(GINI_IV_mean, columns=['alpha', 'GINI', 'IV'])
-        
-        df_cat_features_alpha_logloss = pd.DataFrame(L_logloss_mean, columns=['alpha', 'logloss'])
-        # display(df_cat_features_alpha_logloss)
-        logloss_min = df_cat_features_alpha_logloss['logloss'].min()
-        alpha_opt = df_cat_features_alpha_logloss[df_cat_features_alpha_logloss['logloss'] == logloss_min]['alpha'].values[0]
-        
-        self.grouped = self._GroupedPredictor(self.grouped)
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:55.550914Z", "start_time": "2020-04-28T06:15:55.536376Z"} scrolled=true
+# Результаты группировки по предикторам с категориями
+woe.stats[woe.stats.predictor.isin(woe.cat_values.keys())]
 
-        return alpha_opt
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:55.574092Z", "start_time": "2020-04-28T06:15:55.552418Z"}
+# Потенциально "плохие" категории
+woe.bad_groups
+
+# %% [markdown]
+# ## Применение группировки к тем же данным
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:56.764165Z", "start_time": "2020-04-28T06:15:55.575480Z"} scrolled=false
+woe = WoeTransformer()
+woe.fit(df_0.iloc[:,:-1], df_0['target'])
+transformed_same = woe.transform(df_0.iloc[:,:-1])
+transformed_same
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:56.781678Z", "start_time": "2020-04-28T06:15:56.765635Z"} code_folding=[] scrolled=true
+# Количество групп и кол-во значений в преобразованном предикторе
+for col in df_0.iloc[:,:-1]:
+    print(f'{col}:', len(woe.stats.get_predictor(col)), transformed_same[col].nunique())
+
+# %% [markdown]
+# ## Применение группировки к новым данным
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:58.611963Z", "start_time": "2020-04-28T06:15:57.407348Z"}
+transformed_other = woe.transform(df_0_test.iloc[:,:-1])
+transformed_other
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:58.630344Z", "start_time": "2020-04-28T06:15:58.612965Z"} code_folding=[] scrolled=false
+# Количество групп и кол-во значений в преобразованном предикторе
+print("Cписок значений был изменен в столбцах:")
+print(' nums_w_letters\n', 'nums_w_letters_obj\n', 'letters_w_na')
+print()
+for col in df_0_test.iloc[:,:-1]:
+    if col in transformed_other.columns:
+        a = woe.stats.get_predictor(col).WOE
+        b = transformed_other[col]
+        print(f'{col}:', a.nunique(), b.nunique(), 'Новые:', b[~b.isin(a.unique())].unique())
+
+# %% [markdown]
+# ## Одновременное обучение и применение группировки
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:58.611963Z", "start_time": "2020-04-28T06:15:57.407348Z"}
+fit_transformed_same = woe.fit_transform(df_0.iloc[:,:-1], df_0['target'])
+fit_transformed_same
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:15:58.630344Z", "start_time": "2020-04-28T06:15:58.612965Z"} code_folding=[] scrolled=true
+# Количество групп и кол-во значений в преобразованном предикторе
+for col in df_0.iloc[:,:-1]:
+    print(f'{col}:', len(woe.stats.get_predictor(col)), transformed_same[col].nunique())
+
+# %% [markdown]
+# ## Сравнение группировки с классическим трансформером
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:08.455912Z", "start_time": "2020-04-28T06:15:58.631318Z"}
+# Обучение и применение группировок классическим вариантом
+res_df = pd.DataFrame()
+res_df_trained = pd.DataFrame()
+for col in df_0.columns[:-1]:
+    print(col)
+    cv = ['пусто']
+    if 'nums_w_letters' in col:
+        cv.extend(['d', 'f'])
+    elif 'letters' in col:
+        cv.extend(df_0[col].unique())
+
+    t = woe_vanilla.woeTransformer(df_0[col].fillna('пусто'), df_0['target'], plot=True, cat_values=cv)
+    o = woe_vanilla.woe_apply(df_0[col].fillna('пусто'), t)
+    o.name = col
+    t.insert(1, 'predictor', col)
+    res_df = res_df.append(t)
+    res_df_trained = res_df_trained.append(o)
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:08.472425Z", "start_time": "2020-04-28T06:16:08.457283Z"} scrolled=true
+# результаты группировки классом
+res_class = woe.stats.copy()
+res_vanilla = res_df[woe.stats.columns].copy()
+print('Размерность_класс:', res_class.shape)
+print('Размерность_vanilla:', res_vanilla.shape)
+
+# Проверка результатов
+print('Всего ячеек в результатах:', 
+      res_class.shape[0]*res_class.shape[1],
+      res_vanilla.shape[0]*res_vanilla.shape[1])
+print('Кол-во одинаковых ячеек:', (res_class.fillna('пусто') == res_vanilla).sum().sum())
+
+# %% [markdown]
+# Результаты группировки одинаковые
+
+# %% [markdown]
+# ## Сравнение применения группировки с классическим трансформером
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:08.485492Z", "start_time": "2020-04-28T06:16:08.474431Z"} scrolled=true
+# Количество одинаковых ячеек по столбцам
+(res_df_trained.T == fit_transformed_same).sum()
+
+# %% [markdown]
+# Результаты применения группировки к (тем же) данным одинаковые везде, кроме признака "nums_w_letters".  
+#
+# Это произошло из-за того, что в столбце содержались как числа, так и строки, и при создании датасета тип столбца не был явно указан как "object", из-за чего тип автоматически был выбран "str" и числа преобразовались в строки (их в датасете 9000 из 10000 значений)  
+#
+# Если явно привести тип к числовому (где это возможно) и повторить расчеты для этого столбца
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:10.067142Z", "start_time": "2020-04-28T06:16:08.486466Z"} scrolled=true
+# Обучение и применение группировок классическим вариантом
+res_df_0 = pd.DataFrame()
+res_df_trained_0 = pd.DataFrame()
+for col in df_0[['nums_w_letters']]:
+    print(col)
+    cv = ['пусто']
+    if 'nums_w_letters' in col:
+        cv.extend(['d', 'f'])
+
+    t = woe_vanilla.woeTransformer(df_0[col].fillna('пусто'),
+                                   df_0['target'], plot=True, cat_values=cv)
+    o = woe_vanilla.woe_apply(df_0[col].apply(pd.to_numeric, errors='ignore').fillna('пусто'), t)
+    o.name = col
+    t.insert(1, 'predictor', col)
+    res_df_0 = res_df_0.append(t)
+    res_df_trained_0 = res_df_trained_0.append(o)
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:10.074350Z", "start_time": "2020-04-28T06:16:10.068332Z"} scrolled=true
+# Количество одинаковых ячеек по столбцам
+(res_df_trained_0.T == fit_transformed_same[['nums_w_letters']]).sum()
+
+# %% [markdown]
+# ## Сравнение группировки с улучшенным трансформером
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:13.652352Z", "start_time": "2020-04-28T06:16:10.075352Z"}
+# Обучение и применение группировок классическим вариантом
+res_df = pd.DataFrame()
+res_df_trained = pd.DataFrame()
+for col in df_0.columns[:-1]:
+    print(col)
+    cv = ['пусто']
+    if 'nums_w_letters' in col:
+        cv.extend(['d', 'f'])
+    elif 'letters' in col:
+        cv.extend(df_0[col].unique())
+
+    t = woe_new.woeTransformer(df_0[col].fillna('пусто'), df_0['target'], plot=True, cat_values=cv)
+    o = woe_new.woe_apply(df_0[col].apply(pd.to_numeric, errors='ignore').fillna('пусто'), t)
+    o.name = col
+    t.insert(1, 'predictor', col)
+    res_df = res_df.append(t)
+    res_df_trained = res_df_trained.append(o)
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:13.666466Z", "start_time": "2020-04-28T06:16:13.652352Z"} scrolled=true
+# результаты группировки классом
+res_class = woe.stats.copy()
+res_new = res_df[woe.stats.columns].copy()
+print('Размерность_класс:', res_class.shape)
+print('Размерность_vanilla:', res_vanilla.shape)
+
+# Проверка результатов
+print('Всего ячеек в результатах:', 
+      res_class.shape[0]*res_class.shape[1],
+      res_new.shape[0]*res_new.shape[1])
+print('Кол-во одинаковых ячеек:', (res_class.fillna('пусто') == res_new).sum().sum())
+
+# %% [markdown]
+# Результаты группировки одинаковые
+
+# %% [markdown]
+# ## Сравнение применения группировки с улучшенным трансформером
+
+# %% ExecuteTime={"end_time": "2020-04-28T06:16:13.682483Z", "start_time": "2020-04-28T06:16:13.668472Z"} scrolled=true
+# Количество одинаковых ячеек по столбцам
+(res_df_trained.T == fit_transformed_same).sum()
