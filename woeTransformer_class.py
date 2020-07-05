@@ -227,13 +227,13 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.fit(X, y, cat_values=cat_values)
         return self.transform(X)
     
-    def _transform_single(self, S_data):
+    def _transform_single(self, x, stats=None):
         """
         Применение группировки и WoE-преобразования
 
         Входные данные:
         ---------------
-            S_data : pandas.Series
+            x : pandas.Series
                     Значения предиктора
         Возвращает:
         ---------------
@@ -242,22 +242,23 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     WoE = 0, если группа не встречалась в обучающей выборке
 
         """
-        orig_index = S_data.index
-        X_woe = S_data.copy()
-        DF_groups = self.stats.get_predictor(X_woe.name)
+        orig_index = x.index
+        X_woe = x.copy()
+        if stats is None: 
+            stats = self.stats.get_predictor(X_woe.name)
         # Маппинги для замены групп на соответствующие значения WOE
-        num_map = {DF_groups.loc[i, 'groups']: DF_groups.loc[i, 'WOE']
-                   for i in DF_groups.index if DF_groups.loc[i, 'type'] == 'num'}
-        cat_map = {DF_groups.loc[i, 'groups']: DF_groups.loc[i, 'WOE']
-                   for i in DF_groups.index if DF_groups.loc[i, 'type'] == 'cat'}
+        num_map = {stats.loc[i, 'groups']: stats.loc[i, 'WOE']
+                   for i in stats.index if stats.loc[i, 'type'] == 'num'}
+        cat_map = {stats.loc[i, 'groups']: stats.loc[i, 'WOE']
+                   for i in stats.index if stats.loc[i, 'type'] == 'cat'}
         # Категориальные группы
-        cat_bounds = DF_groups.loc[DF_groups['type'] == 'cat', 'groups']
+        cat_bounds = stats.loc[stats['type'] == 'cat', 'groups']
 
         # predict по числовым значениям
-        DF_num = DF_groups.loc[DF_groups['type'] == 'num']
+        DF_num = stats.loc[stats['type'] == 'num']
         if DF_num.shape[0] > 0:
             # Границы (правые) интервалов для разбивки числовых переменных 
-            num_bounds = [-np.inf] + list(pd.IntervalIndex(DF_groups.loc[DF_groups['type'] == 'num', 'groups']).right)
+            num_bounds = [-np.inf] + list(pd.IntervalIndex(stats.loc[stats['type'] == 'num', 'groups']).right)
             # Выделение только числовых значений предиктора 
             # (похожих на числа и тех, что явно не указаны как категориальные)
             X_woe_num = pd.to_numeric(X_woe[(self._get_nums_mask(X_woe)) &
@@ -271,7 +272,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             X_woe_num = pd.Series()
 
         # predict по категориальным значениям (может обновлять значения по числовым)
-        DF_cat = DF_groups.loc[DF_groups['type'] == 'cat']
+        DF_cat = stats.loc[stats['type'] == 'cat']
         if DF_cat.shape[0] > 0:
             # Выделение строковых значений и тех, что явно выделены как категориальные 
             X_woe_cat = X_woe[X_woe.isin(cat_map.keys())]
@@ -283,7 +284,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # predict по новым категориям (нечисловые: которых не было при групприровке)
         # Сбор индексов категориальных и числовых значений
         used_index = np.hstack([X_woe_cat.index, X_woe_num.index])
-        if len(used_index) < len(S_data):
+        if len(used_index) < len(x):
             X_woe_oth = X_woe.index.drop(used_index)
             X_woe_oth = pd.Series(0, index=X_woe_oth)
         else:
@@ -294,7 +295,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return X_woe
 
-    def _fit_single(self, x, y):
+    def _fit_single(self, x, y, gr_subset=None, cat_vals=None):
         """
         Расчет WOE и IV
         
@@ -310,12 +311,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         gr_subset_num = pd.DataFrame()
         gr_subset_cat = pd.DataFrame()
         col = x.name
-
-        cat_vals = self.cat_values.get(col, [])
+        if gr_subset is None: gr_subset = (self.grouped.get_predictor(col))
+        if cat_vals is None: cat_vals = self.cat_values.get(col, [])
         nan_mask = x.isna()
         num_mask = self._get_nums_mask(x) & (~x.isin(cat_vals)) & (~nan_mask)
         num_vals = x.loc[num_mask].unique()
-        gr_subset = (self.grouped.get_predictor(col))
+        
         try:        
             # Расчет коэффициентов тренда по числовым значениям предиктора
             if num_mask.sum() > 0:
@@ -538,7 +539,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         self.grouped = self._GroupedPredictor(self.grouped)
     
-    def _statistic(self, DF_groups):
+    def _statistic(self, stats):
         """
         Расчет статистики по группам предиктора: минимальное, максимальное значение, доля от 
         общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
@@ -546,7 +547,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         Входные данные:
         ---------------
-            DF_groups : pandas.DataFrame
+            stats : pandas.DataFrame
                     Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
                     уникальных значений предиктора. 
                     Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
@@ -557,12 +558,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         """
         nothing = 10 ** -6
-        stats = DF_groups.groupby(['predictor', 'groups'],sort=False).agg({'type':'first',
+        stats = stats.groupby(['predictor', 'groups'],sort=False).agg({'type':'first',
                                                  'sample_count':'sum', 
                                                  'target_count':'sum', 
                                                  'value':['min', 'max']},
-#                                                 as_index=False, 
-                                                 
                                                               )
         stats.columns = ['type', 'sample_count', 'target_count', 'min', 'max']
         stats.reset_index(inplace=True)
@@ -744,7 +743,7 @@ class WoeTransformerRegularized(WoeTransformer):
             temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, self.alphas, self.n_seeds)
             self.alpha_values.update({col:temp_alpha})
 
-        # self._grouping(X, y)    
+        self._grouping(X, y)    
         # Расчет WOE и IV
         self._fit_numeric(X, y)
         # Поиск потенциальных групп 
@@ -754,11 +753,15 @@ class WoeTransformerRegularized(WoeTransformer):
         return self
 
    
-    def _cat_features_alpha_logloss(self, x, y, alpha, seed=100):
+    def _cat_features_alpha_logloss(self, x, y, alphas, seed=100):
         """
         функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
         
         """
+        # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма 
+                # по рассчитанным WOE из IVWOE
+        def calc_woe_i(row_value, stats):
+            return stats.loc[stats['groups']==row_value, 'WOE'].values[0]
 
         predictor = x.name
         target = y.name
@@ -767,7 +770,7 @@ class WoeTransformerRegularized(WoeTransformer):
         df[predictor] = df[predictor].fillna('NO_INFO')
         L_logloss_mean = []
         GINI_IV_mean = []
-        for alpha_i in alpha:
+        for alpha_i in alphas:
             logloss_i = []
             GINI_i = []
             IV_i = []
@@ -778,80 +781,30 @@ class WoeTransformerRegularized(WoeTransformer):
                 X_test = pd.DataFrame(X_test)
                 # X_train[target] = y_train
                 X_test[target] = y_test
-                X_test_WOE = pd.DataFrame()
-                X_test_WOE['Target'] = X_test[target]
+                X_test_WOE = pd.DataFrame({'Target':X_test[target]})
 
                 df_i = self._group_single(X_train, y_train, alpha_i)
                 df_i['groups'] = df_i['value'].fillna('пусто')
                 df_i['type'] = 'cat'
-                self.grouped = self.grouped.append(df_i)
+                df_i = self._GroupedPredictor(df_i)
                 
-                        
-                # grouped_temp = pd.crosstab(X_train[predictor], X_train[target], normalize=False, margins='index')
-                # grouped_temp.rename(columns={'All':'Values', 1:'Target_cnt'}, inplace=True)
-                # grouped_temp['Target'] = grouped_temp['Target_cnt'] / grouped_temp['Values']
-                # grouped_temp['Non Target'] = 1 - grouped_temp['Target']
-                # grouped_temp = grouped_temp[['Non Target', 'Target', 'Values', 'Target_cnt']].drop('All').reset_index()
-                # grouped_temp.columns = grouped_temp.columns.rename('')
-
-                
-                # # расчет оптимальной целевой для группы, формула и детали в видео
-                # # https://www.youtube.com/watch?v=g335THJxkto&list=PLLIunAIxCvT8ZYpC6-X7H0QfAQO9H0f-8&index=12&t=0s
-                # # pd = (y_local * K + Y_global * alpha) / (K + alpha)
-                # Y_global = y_train.mean()
-                # K = grouped_temp['Values'] / grouped_temp['Values'].sum()
-                # grouped_temp['Target_transformed'] = (grouped_temp['Target'] * K + Y_global * alpha_i) / (K + alpha_i)
-                # grouped_temp['Target_cnt_transformed'] = np.floor(grouped_temp['Values'] * grouped_temp['Target_transformed']).astype(int)
-
-                # # если пустых значений = 1 - необходимо добавить в таблицу это значение
-                # if 'NO_INFO' not in grouped_temp[predictor].values:
-                #     grouped_temp = grouped_temp.append({predictor : 'NO_INFO',
-                #                     'Non Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 0)].shape[0],
-                #                     'Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 1)].shape[0],
-                #                     'Values' : df[(df[predictor] == 'NO_INFO')].shape[0],
-                #                     'Target_cnt' : df[(df[predictor] == 'NO_INFO') & (df[target] == 1)].shape[0],
-                #                     'Target_transformed' : X_train[target].mean(),
-                #                     'Target_cnt_transformed' : (df[(df[predictor] == 'NO_INFO')].shape[0]) * X_train[target].mean()
-                #                 }, ignore_index=True)
-
-                # grouped_temp.sort_values(by = 'Values', inplace=True, ascending=False)
-                # grouped_temp = grouped_temp.reset_index(drop=True)
-                # order = list(grouped_temp[predictor])
-
-                # # расчет WOE и IV на Train
-                # df_i = grouped_temp[['Values', 'Target_cnt_transformed', predictor]]
-                # df_i.rename(columns={'Values' : 'sample_count', 
-                #                     'Target_cnt_transformed' : 'target_count',
-                #                     predictor : 'groups'}, inplace=True)
-                # df_i['predictor'] = predictor
-                # df_i['type'] = 'cat'
-
-
                 WOE_i = self._statistic(df_i)
-                self.stats = self.stats.append(WOE_i)
-                # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма 
-                # по рассчитанным WOE из IVWOE
-                def calc_woe_i(row_value):
-                    if row_value not in WOE_i['groups']:
-                        return 0
-                    else:
-                        i = 0
-                        while row_value not in WOE_i['groups'][i]: i += 1
-                        return WOE_i['WOE'][i]
 
-                X_test_WOE['WOE'] = X_test[predictor].apply(calc_woe_i)
+                test_stats = self._fit_single(X_train, y_train, df_i)    
+
+                test_trans = self._transform_single(X_test[predictor], test_stats)
+
+                X_test_WOE['WOE'] = X_test[predictor].apply(calc_woe_i, args=(WOE_i,))
+                # display(test_stats)
+                display(WOE_i)
+                display(X_test[predictor]) 
+                display(test_trans)
+                display(X_test_WOE['WOE'])
                 roc_auc_i = sk.metrics.roc_auc_score(X_test_WOE['Target'], X_test_WOE['WOE'])
                 
                 X_test = pd.merge(X_test, df_i[['groups', 'target_rate']].rename(columns={'groups':predictor}), 
                                     how='left', on=predictor)
-                #print(X_test[X_test['Target_transformed'].isna()])
-                
-    #             print(seed_i)
-    #             print(X_test['Target_transformed'].isnull().sum())
-    #             print(X_test['Target_transformed'].loc[X_test['Target_transformed'].isnull()])
-    #             print(np.isinf(X_test['Target_transformed']).sum())
-                
-    #             logloss_i.append(log_loss(X_test[target], X_test['Target_transformed']))
+               
                 logloss_i.append(sk.metrics.log_loss(X_test[target], X_test['target_rate'].fillna(0)))
                 IV_i.append(WOE_i['IV'].sum())
                 GINI_i.append(abs(2 * roc_auc_i - 1))
@@ -867,6 +820,4 @@ class WoeTransformerRegularized(WoeTransformer):
         logloss_min = df_cat_features_alpha_logloss['logloss'].min()
         alpha_opt = df_cat_features_alpha_logloss[df_cat_features_alpha_logloss['logloss'] == logloss_min]['alpha'].values[0]
         
-        self.grouped = self._GroupedPredictor(self.grouped)
-
         return alpha_opt
