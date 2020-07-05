@@ -2,10 +2,11 @@
 Модуль с полезными общими функциями (не специфичными для конкретной задачи или обработки)
 Например: поиск пересекающихся значений в двух pandas.Series, применение стиля к pandas.DataFrame
 """
-
+import numpy as np
+import pandas as pd
 
 #%%
-def generate_train_data(n_samples):
+def generate_train_data():
     digit_weighs = np.ones(10) / 10
     unequal_frequencies = [0.6, 0.3, 0.1]
     small_cat_size = 10
@@ -33,12 +34,12 @@ def generate_train_data(n_samples):
          'single_integer': np.ones(10000),
          'single_letter': np.array(['x']*10000),
          'single_nan': np.full(10000, np.nan),
-         'target':np.random.choice(range(2), 10000)})
+         'target':np.random.choice(range(2), 10000, p=[0.95, .05])})
 
     
     return res
     
-def generate_test_data(n_samples):
+def generate_test_data():
     digit_weighs = [.15,.15,.05,.05, .1,.1,.1,.01,.19,.1]
     unequal_frequencies = [0.1, 0.6, 0.3]
     small_cat_size = 10
@@ -68,8 +69,6 @@ def generate_test_data(n_samples):
          'single_integer': np.ones(10000),
          'single_letter': np.array(['x']*10000),
          'single_nan': np.full(10000, np.nan),
-         'target':np.random.choice(range(2), 10000)})
+         'target':np.random.choice(range(2), 10000, p=[0.95, .05])})
     
     return res
-
-generate_train_data(1000).columns, generate_test_data(1000).columns
