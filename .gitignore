@@ -1,4 +1,6 @@
 # Default ignored files
+.DS_store
+.ipynb_checkpoints	
 /workspace.xml
 .idea
 .idea/

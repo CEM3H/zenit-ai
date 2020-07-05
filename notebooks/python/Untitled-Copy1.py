@@ -3,12 +3,13 @@
 # jupyter:
 #   jupytext:
 #     cell_metadata_filter: all
+#     formats: ipynb,python//py:percent
 #     notebook_metadata_filter: all,-language_info
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.2
+#       jupytext_version: 1.5.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -28,7 +29,10 @@
 # ---
 
 # %% ExecuteTime={"end_time": "2020-07-03T17:02:53.905951Z", "start_time": "2020-07-03T17:02:53.858766Z"}
-import sys
+from pathlib import Path
+import os
+os.chdir('/Users/stepankadocnikov/Documents/GitHub/woe-transformer')
+print(os.getcwd())
 
 
 # %% ExecuteTime={"end_time": "2020-07-03T17:02:54.811316Z", "start_time": "2020-07-03T17:02:54.783465Z"}
@@ -51,47 +55,109 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, GridSearchCV, StratifiedKFold
 from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import Pipeline
+from sklearn.datasets import make_classification
 
-from woeTransformer_class import WoeTransformer
-from functions import auc_to_gini
+from utils import *
 
 # %load_ext autoreload
-# %aimport functions
+# %aimport utils
 # %aimport woeTransformer_class
 # %autoreload 1
 
-# %% ExecuteTime={"end_time": "2020-07-03T19:11:50.450594Z", "start_time": "2020-07-03T19:11:49.717910Z"}
-vanilla = WoeTransformer()
+# %%
+train_data = generate_train_data()
+test_data = generate_test_data()
 
+
+# %%
+X, y = make_classification(5000, 20, 5, 0, weights=(0.95, 0.05), shift=5, scale=2)
+X = pd.DataFrame(X)
+for i, f in enumerate(X.columns):
+    if i <= 9:
+        X[f] = X[f].astype(int)
+    if i & 2 == 0:
+        ind = np.random.choice(range(len(X)), 500, replace=False)
+        X.loc[ind, f] = np.nan
+    X[f] = X[f].astype(str)
+y = pd.Series(y, name='target')
+X[0].name
 
 # %% ExecuteTime={"end_time": "2020-07-03T19:04:39.772315Z", "start_time": "2020-07-03T19:04:39.769279Z"}
-n_seeds = 10
-alphas = [0.0001, 0.001, 0.01, 0.1, 1, 10]
-
-# %% ExecuteTime={"end_time": "2020-07-03T19:13:35.250809Z", "start_time": "2020-07-03T19:12:55.764500Z"} scrolled=true
-regul = WoeTransformerRegularized(alphas=alphas, n_seeds=10)
-regul.fit(data[cols].astype(str).replace({'nan':np.nan}), )
+n_seeds = 1
+alphas = [0, 0.0001, 0.001, 0.01, 0.02, .03]
 
 
-# %% ExecuteTime={"end_time": "2020-07-03T18:53:29.114158Z", "start_time": "2020-07-03T18:53:28.945370Z"} deletable=false editable=false run_control={"frozen": true} scrolled=true
-# # Проверка группировки функцией и классом
-# regul_grouping = (regul.grouped[['predictor', 'sample_count', 'target_count', 'value']]
-#                   .sort_values(['predictor', 'value'])
-#                   .reset_index(drop=True)
-#                   .replace({'nan':'NO_INFO'}))
-#
-# test_grouping = pd.DataFrame()
-# for col in cols:
-#     tmp = cat_features_alpha_logloss(data, col, 'mob12_90', alphas, n_seeds)
-#     tmp.insert(0, 'predictor', col)
-#     test_grouping = test_grouping.append(tmp.rename(columns={'groups':'value'}))
-#
-# test_grouping.sort_values(['predictor', 'value'], inplace=True)
-# test_grouping.reset_index(drop=True, inplace=True)
-# test_grouping.shape
-# (test_grouping == regul_grouping).sum().sum() - regul_grouping.shape[0] * regul_grouping.shape[1]
+# %%
+vanilla = WoeTransformer()
+vanilla.fit(X[[0]], y)
 
-# %% ExecuteTime={"end_time": "2020-07-03T18:50:32.098173Z", "start_time": "2020-07-03T18:50:31.876664Z"} deletable=false editable=false run_control={"frozen": true}
+# %% ExecuteTime={"end_time": "2020-07-03T19:13:35.250809Z", "start_time": "2020-07-03T19:12:55.764500Z"} scrolled=false
+regul = WoeTransformerRegularized(alphas=alphas, n_seeds=n_seeds)
+regul.fit(X.iloc[:,:10], y)
+
+
+
+# %%
+a = [[0, 0.203948491746367], 
+     [0.0001, 0.20394840230562705], 
+     [0.001, 0.2039206201054458], 
+     [0.01, 0.2036637928958567], 
+     [0.02, 0.20353968262545227], 
+     [0.03, 0.20347955300751042]]
+np.min(a, axis=0), np.argmin(a, 0), np.argmin(a, 0)[1], a[np.argmin(a, 0)[1]][0]
+
+# %%
+del GroupedPredictor
+class GroupedPredictor(pd.DataFrame):
+        """
+        Вспомогательный класс для удобства доступа к некоторым данным
+        """
+        def get_predictor(self, x):
+            """
+            Получение подвыборки по имени предиктора(ов)
+            
+            Входные данные:
+            ---------------
+                x : str/int/list-like
+                        Предиктор или список предикторов
+                    
+            Возвращает:
+            -----------
+                self : pd.DataFrame
+                        Часть датафрейма (самого себя)
+            """
+            if isinstance(x, (list, set, tuple)):
+                return self[self['predictor'].isin(x)]
+            else:
+                return self[self['predictor'] == x] 
+        
+        def append(self, other):
+            return super(GroupedPredictor, self).append(other)
+a = pd.DataFrame({'a': [1,2,3], 'predictor':['a', 'a', 'b']})
+# GroupedPredictor(a).append(a)
+GroupedPredictor({'a': [1,2,3], 'predictor':['a', 'a', 'b']})
+GroupedPredictor().append(a)
+
+
+# %% ExecuteTime={"end_time": "2020-07-03T18:53:29.114158Z", "start_time": "2020-07-03T18:53:28.945370Z"} code_folding=[0, 1, 7]
+# Проверка группировки функцией и классом
+regul_grouping = (regul.grouped[['predictor', 'sample_count', 'target_count', 'value']]
+                  .sort_values(['predictor', 'value'])
+                  .reset_index(drop=True)
+                  .replace({'nan':'NO_INFO'}))
+
+test_grouping = pd.DataFrame()
+for col in cols:
+    tmp = cat_features_alpha_logloss(data, col, 'target', alphas, n_seeds)
+    tmp.insert(0, 'predictor', col)
+    test_grouping = test_grouping.append(tmp.rename(columns={'groups':'value'}))
+
+test_grouping.sort_values(['predictor', 'value'], inplace=True)
+test_grouping.reset_index(drop=True, inplace=True)
+test_grouping.shape
+(test_grouping == regul_grouping).sum().sum() - regul_grouping.shape[0] * regul_grouping.shape[1]
+
+# %% ExecuteTime={"end_time": "2020-07-03T18:50:32.098173Z", "start_time": "2020-07-03T18:50:31.876664Z"} code_folding=[0, 1, 7] deletable=false editable=false run_control={"frozen": true}
 # # Проверка расчета статистик функцией и классом
 # regul_stats = (regul.stats[test_stats.columns]
 #               .sort_values(['predictor', 'groups'])
@@ -114,14 +180,12 @@ regul.fit(data[cols].astype(str).replace({'nan':np.nan}), )
 #               .sort_values(['predictor', 'groups'])
 #               .reset_index(drop=True)
 #               .replace({'nan':'NO_INFO'}))
-
+data = pd.concat([X, y], axis=1)
+data.columns = ['col_'+str(i) for i in data.columns[:-1]] + ['target']
 test_stats = pd.DataFrame()
-for col in cols:
-    tmp = cat_features_alpha_logloss(data, col, 'mob12_90', alphas, n_seeds)
+for col in data.columns[:10]:
+    tmp = cat_features_alpha_logloss(data, col, 'target', alphas, n_seeds, plot_i=False)
     print(col, tmp)
-
-# %% ExecuteTime={"end_time": "2020-07-03T19:07:39.853780Z", "start_time": "2020-07-03T19:06:58.385159Z"}
-regul.alpha_values
 
 
 # %% ExecuteTime={"end_time": "2020-07-03T19:00:48.162473Z", "start_time": "2020-07-03T19:00:48.156485Z"}
@@ -152,7 +216,7 @@ def IVWOE(DF_groups):
     return DF_statistic
 
 
-# %% ExecuteTime={"end_time": "2020-07-03T19:01:48.438171Z", "start_time": "2020-07-03T19:01:48.409565Z"}
+# %% ExecuteTime={"end_time": "2020-07-03T19:01:48.438171Z", "start_time": "2020-07-03T19:01:48.409565Z"} code_folding=[]
 # функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
 from sklearn.metrics import log_loss
 
@@ -196,7 +260,6 @@ def cat_features_alpha_logloss(df, predictor, target, alpha, seed = 100, plot_i 
             
             # если пустых значений = 1 - необходимо добавить в таблицу это значение
             if 'NO_INFO' not in tmp[predictor].values:
-                print('hi')
                 tmp = tmp.append({predictor : 'NO_INFO',
                                 'Non Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 0)].shape[0],
                                 'Target' : df[(df[predictor] == 'NO_INFO') & (df[target] == 1)].shape[0],
@@ -287,4 +350,26 @@ def cat_features_alpha_logloss(df, predictor, target, alpha, seed = 100, plot_i 
     
     return(alpha_opt)
 
+# %% [markdown] trusted=true
+# ## Тест на разнообразных данных
+
 # %%
+train_data
+
+# %% scrolled=false
+vanilla = WoeTransformer()
+vanilla.fit(train_data.drop('target', axis=1), train_data['target'])
+
+
+# %% collapsed=true
+with pd.option_context('min_rows', 100, 'max_rows', 100):
+    display(vanilla.stats)
+    display(vanilla.transform(train_data))
+    display(vanilla.transform(test_data))
+    
+# vanilla.borders
+
+# %% scrolled=false
+regul = WoeTransformerRegularized(alphas=[0, 0.1, 0.5], n_seeds=5)
+regul.fit(train_data.drop('target', axis=1), train_data['target'], )
+
