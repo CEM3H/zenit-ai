@@ -16,6 +16,7 @@ _monotonic_borders - обработка случаев: когда много п
 """
 import math
 import time
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -497,14 +498,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             R_borders.append(score_j)
 
         # Проверка последней добавленной группы
-        DF_iter = DF_grouping.loc[DF_grouping['value'] > R_borders[-1]]
-        sample_rate_i = DF_iter['sample_rate'].sum()  # доля выборки
-        sample_count_i = DF_iter['sample_count'].sum()  # количество наблюдений
-        target_count_i = DF_iter['target_count'].sum()  # количество целевых
-        non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
+        if len(R_borders) > 0:
+            DF_iter = DF_grouping.loc[DF_grouping['value'] > R_borders[-1]]
+            sample_rate_i = DF_iter['sample_rate'].sum()  # доля выборки
+            sample_count_i = DF_iter['sample_count'].sum()  # количество наблюдений
+            target_count_i = DF_iter['target_count'].sum()  # количество целевых
+            non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
 
-        if (sample_rate_i < self.min_sample_rate) or (target_count_i < self.min_count) or (non_target_count_i < self.min_count):
-            R_borders.remove(R_borders[-1])  # удаление последней границы
+            if (sample_rate_i < self.min_sample_rate) or (target_count_i < self.min_count) or (non_target_count_i < self.min_count):
+                R_borders.remove(R_borders[-1])  # удаление последней границы
+        else:
+            predictor = DF_grouping['predictor'].iloc[0]
+            warnings.warn("Couldn't find any borders for feature {}.\n Borders set on (-inf, +inf)".format(predictor))
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
 
@@ -810,32 +815,32 @@ class WoeTransformerRegularized(WoeTransformer):
         
         return alpha_opt
     
-    def _plot_regularize_single(self, predictor):
-        reg_stats = self.regularization_stats.get_predictor(predictor)
-        fig = plt.figure(figsize=(16, 8))
-        ax = fig.add_subplot(111)
-        ax.plot(reg_stats['alpha'], reg_stats['logloss'], label = 'logloss_test', marker='o', ms = 3, color = 'red')
-        ax2 = ax.twinx()
-        ax2.plot(df_cat_features_alpha_GINI_IV['alpha'], df_cat_features_alpha_GINI_IV['IV'], label = 'IV_train', marker='o', ms = 3, color = 'blue')
-        ax2.plot(df_cat_features_alpha_GINI_IV['alpha'], df_cat_features_alpha_GINI_IV['GINI'], label = 'GINI_test', marker='o', ms = 3, color = 'green')
+    # def _plot_regularize_single(self, predictor):
+    #     reg_stats = self.regularization_stats.get_predictor(predictor)
+    #     fig = plt.figure(figsize=(16, 8))
+    #     ax = fig.add_subplot(111)
+    #     ax.plot(reg_stats['alpha'], reg_stats['logloss'], label = 'logloss_test', marker='o', ms = 3, color = 'red')
+    #     ax2 = ax.twinx()
+    #     ax2.plot(df_cat_features_alpha_GINI_IV['alpha'], df_cat_features_alpha_GINI_IV['IV'], label = 'IV_train', marker='o', ms = 3, color = 'blue')
+    #     ax2.plot(df_cat_features_alpha_GINI_IV['alpha'], df_cat_features_alpha_GINI_IV['GINI'], label = 'GINI_test', marker='o', ms = 3, color = 'green')
         
-        ax_y_step = (max(reg_stats['logloss']) - min(reg_stats['logloss'])) * 0.1
-        ax_y_min = min(reg_stats['logloss']) - ax_y_step
-        ax_y_max = max(reg_stats['logloss']) + ax_y_step
-        ax.set_ylim(ax_y_min, ax_y_max)
+    #     ax_y_step = (max(reg_stats['logloss']) - min(reg_stats['logloss'])) * 0.1
+    #     ax_y_min = min(reg_stats['logloss']) - ax_y_step
+    #     ax_y_max = max(reg_stats['logloss']) + ax_y_step
+    #     ax.set_ylim(ax_y_min, ax_y_max)
         
-        ax2_y_step = (max(max(df_cat_features_alpha_GINI_IV['IV']), max(df_cat_features_alpha_GINI_IV['GINI'])) - min(min(df_cat_features_alpha_GINI_IV['IV']), min(df_cat_features_alpha_GINI_IV['GINI']))) * 0.1
-        ax2_y_min = min(min(df_cat_features_alpha_GINI_IV['IV']), min(df_cat_features_alpha_GINI_IV['GINI'])) - ax2_y_step
-        ax2_y_max = max(max(df_cat_features_alpha_GINI_IV['IV']), max(df_cat_features_alpha_GINI_IV['GINI'])) + ax2_y_step
-        ax2.set_ylim(ax2_y_min, ax2_y_max)
+    #     ax2_y_step = (max(max(df_cat_features_alpha_GINI_IV['IV']), max(df_cat_features_alpha_GINI_IV['GINI'])) - min(min(df_cat_features_alpha_GINI_IV['IV']), min(df_cat_features_alpha_GINI_IV['GINI']))) * 0.1
+    #     ax2_y_min = min(min(df_cat_features_alpha_GINI_IV['IV']), min(df_cat_features_alpha_GINI_IV['GINI'])) - ax2_y_step
+    #     ax2_y_max = max(max(df_cat_features_alpha_GINI_IV['IV']), max(df_cat_features_alpha_GINI_IV['GINI'])) + ax2_y_step
+    #     ax2.set_ylim(ax2_y_min, ax2_y_max)
         
-        ax.tick_params(axis="x", labelsize=12)
-        ax2.tick_params(axis="x", labelsize=12)
-        ax.set_xlabel('alpha', fontsize=16)
-        ax.set_ylabel('logloss', fontsize=16)
-        ax2.set_ylabel('GINI and IV', fontsize=16)
-        ax.legend(loc = "upper left")
-        ax2.legend(loc = "upper right")
-        plt.grid(True)
-        plt.title('Распределение logloss, GINI и IV от значения alpha', fontsize=20)
-        plt.show()
+    #     ax.tick_params(axis="x", labelsize=12)
+    #     ax2.tick_params(axis="x", labelsize=12)
+    #     ax.set_xlabel('alpha', fontsize=16)
+    #     ax.set_ylabel('logloss', fontsize=16)
+    #     ax2.set_ylabel('GINI and IV', fontsize=16)
+    #     ax.legend(loc = "upper left")
+    #     ax2.legend(loc = "upper right")
+    #     plt.grid(True)
+    #     plt.title('Распределение logloss, GINI и IV от значения alpha', fontsize=20)
+    #     plt.show()
