@@ -234,7 +234,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # -------------------------
     # Внутренние функции над всем датасетом
     # -------------------------
-    def _grouping(self, X, y):
+    def _grouping(self, X, y, alpha_values=None):
         """
         Применение группировки ко всем предикторам
         """
@@ -242,9 +242,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         df = df.fillna('пусто')
         df['target'] = y.copy()
 
+        if alpha_values is None: alpha_values = self.alpha_values
         # Группировка и расчет показателей
         for col in df.columns[:-1]:
-            alpha = self.alpha_values.get(col, 0)
+            alpha = alpha_values.get(col, 0)
             grouped_temp = self._group_single(df[col], y, alpha)
             self.grouped = self.grouped.append(grouped_temp)
         
@@ -305,10 +306,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # расчет оптимальной целевой для группы, формула и детали в видео
         # https://www.youtube.com/watch?v=g335THJxkto&list=PLLIunAIxCvT8ZYpC6-X7H0QfAQO9H0f-8&index=12&t=0s
         # pd = (y_local * K + Y_global * alpha) / (K + alpha)
-        Y_global = y.mean()
-        K = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum()
-        grouped_temp['target_rate'] = (grouped_temp['target_rate'] * K + Y_global * alpha) / (K + alpha)
-        grouped_temp['target_count'] = np.floor(grouped_temp['sample_count'] * grouped_temp['target_rate']).astype(int)
+
+        grouped_temp = self._regularize_groups(grouped_temp, alpha)
 
         return _GroupedPredictor(grouped_temp)
         
@@ -528,8 +527,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         """
         ## Расчеты
-        x2 = [stats['sample_rate'][:i].sum()
-              for i in range(stats.shape[0])] + [1]  # доля выборки с накоплением
+        x2 = [stats['sample_rate'][:i].sum() for i in range(stats.shape[0])] + [1]  # доля выборки с накоплением
         x = [np.mean(x2[i:i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
 
         # Выделение нужной информации для компактности
@@ -689,7 +687,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         return {x.name : np.polyfit(x, y, deg=1)}
     
-    
+    def _regularize_groups(self, grouped, alpha):
+            res = grouped.copy()
+            Y_global = np.dot(grouped['sample_rate'], grouped['target_rate'])
+            K = grouped['sample_rate']
+            res['target_rate'] = (grouped['target_rate'] * K + Y_global * alpha) / (K + alpha)
+            res['target_count'] = np.floor(res['sample_count'] * res['target_rate']).astype(int)
+
+            return res
+
     # Служебные функции
     def _reset_state(self):
         self.trend_coefs = {}
@@ -709,7 +715,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
 
 class WoeTransformerRegularized(WoeTransformer):
-    def __init__(self, min_sample_rate=0.05, min_count=3, alphas=[0], n_seeds=100):
+    def __init__(self, min_sample_rate=0.05, min_count=3, alphas_list=[0], n_seeds=100):
         """
         Инициализация экземпляра класса
         
@@ -723,7 +729,7 @@ class WoeTransformerRegularized(WoeTransformer):
         self.min_sample_rate = min_sample_rate
         self.min_count = min_count
         self.predictors = []
-        self.alphas = alphas
+        self.alphas_list = alphas_list if 0 in alphas_list else [0] + alphas_list
         self.alpha_values = {}
         self.n_seeds = n_seeds
 
@@ -748,10 +754,7 @@ class WoeTransformerRegularized(WoeTransformer):
         self.cat_values = cat_values
         self.regularization_stats = _GroupedPredictor()
         
-        for col in X.columns:
-            temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, self.alphas, self.n_seeds)
-            self.alpha_values.update({col:temp_alpha})
-
+        self._regularize_categorical_cols(X, y, self.alphas_list, self.n_seeds)
         self._grouping(X, y)    
         # Расчет WOE и IV
         self._fit_numeric(X, y)
@@ -761,14 +764,20 @@ class WoeTransformerRegularized(WoeTransformer):
 
         return self
 
+    def _regularize_categorical_cols(self, X, y, alpha_values, n_seeds):
+        self.alpha_values = {col:0 for col in X.columns}
+        for col in X.columns:
+            if X[col].dtype == 'object':
+                temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, alpha_values, n_seeds)
+                self.alpha_values.update({col:temp_alpha})
    
-    def _cat_features_alpha_logloss(self, x, y, alphas, seed=100):
+    def _cat_features_alpha_logloss(self, x, y, alphas_list, seed=100):
         """
         функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
         
         """
         # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма 
-                # по рассчитанным WOE из IVWOE
+        # по рассчитанным WOE из IVWOE
         def calc_woe_i(row_value, stats):
             return stats.loc[stats['groups']==row_value, 'WOE'].values[0]
 
@@ -779,7 +788,7 @@ class WoeTransformerRegularized(WoeTransformer):
         df[predictor] = df[predictor].fillna('NO_INFO')
         L_logloss_mean = []
         GINI_IV_mean = []
-        for alpha_i in alphas:
+        for alpha_i in alphas_list:
             logloss_i = []
             GINI_i = []
             IV_i = []
