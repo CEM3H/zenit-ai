@@ -31,8 +31,10 @@
 # %% ExecuteTime={"end_time": "2020-07-03T17:02:53.905951Z", "start_time": "2020-07-03T17:02:53.858766Z"}
 from pathlib import Path
 import os
+import sys
 os.chdir('/Users/stepankadocnikov/Documents/GitHub/woe-transformer')
 print(os.getcwd())
+sys.path.insert(0, os.getcwd())
 
 
 # %% ExecuteTime={"end_time": "2020-07-03T17:02:54.811316Z", "start_time": "2020-07-03T17:02:54.783465Z"}
@@ -84,7 +86,9 @@ alphas = [0, 0.0001, 0.001, 0.01, 0.02, .03]
 
 # %%
 vanilla = WoeTransformer()
-vanilla.fit(X[[0]], y)
+vanilla.fit(X[[0]], y, opt_alpha_values={0: 0.2})
+#%%
+vanilla.plot_woe(0)
 
 # %% ExecuteTime={"end_time": "2020-07-03T19:13:35.250809Z", "start_time": "2020-07-03T19:12:55.764500Z"} scrolled=false
 regul = WoeTransformerRegularized(alphas=alphas, n_seeds=n_seeds)

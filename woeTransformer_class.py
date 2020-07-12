@@ -151,6 +151,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self._get_possible_groups()
         # Поиск "плохих" групп
         self._get_bad_groups()
+        # Расчет статистик для нерегуляризованных групп
+        self._refit_unegularized(X, y)
 
         return self
 
@@ -207,7 +209,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.fit(X, y, cat_values=cat_values)
         return self.transform(X)
 
-    def plot_woe(self, predictors=None):
+    def plot_woe(self, predictors=None, show_unregul=False):
         """
         Отрисовка одного или нескольких графиков группировки
 
@@ -221,15 +223,19 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         if predictors is None:
             predictors = self.predictors
-        elif isinstance(predictors, str):
+        elif isinstance(predictors, (int, str)):
             predictors = [predictors]
 
         _, axes = plt.subplots(figsize=(10, len(predictors)*5), nrows=len(predictors))
-        try:
-            for i, col in enumerate(predictors):
+        for i, col in enumerate(predictors):
+            unregul_stats = self.stats_unregularized.get_predictor(col)
+            try:
                 self._plot_single_woe_grouping(self.stats.get_predictor(col), axes[i])
-        except TypeError:
-            self._plot_single_woe_grouping(self.stats.get_predictor(col), axes)
+                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(unregul_stats, axes[i], alpha_mod=0.5)
+
+            except TypeError:
+                self._plot_single_woe_grouping(self.stats.get_predictor(col), axes)
+                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(unregul_stats, axes, alpha_mod=0.5)
 
     # -------------------------
     # Внутренние функции над всем датасетом
@@ -246,8 +252,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Группировка и расчет показателей
         for col in df.columns[:-1]:
             alpha = opt_alpha_values.get(col, 0)
-            grouped_temp = self._group_single(df[col], y, alpha)
-            self.grouped = self.grouped.append(grouped_temp)
+            self.grouped = self.grouped.append(self._group_single(df[col], y, alpha))
 
         # Замена пустых значений обратно на np.nan ИЛИ преобразование в числовой тип
         try:
@@ -510,7 +515,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
 
-    def _plot_single_woe_grouping(self, stats, ax_pd=None):
+    def _plot_single_woe_grouping(self, stats, ax_pd=None, alpha_mod=1):
         """
         Построение графика по группировке предиктора
 
@@ -538,15 +543,17 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             _, ax_pd = plt.subplots(figsize=(8, 5))
 
         # Столбчатая диаграмма доли целевых в группах
+        label = 'Группировка' if alpha_mod == 1 else 'Группировка \nнерегуляризованная'
         ax_pd.bar(x=x, height=height, width=width,
-                           color=[0, 122 / 255, 123 / 255], label='Группировка',
-                           alpha=0.7)
+                           color=[0, 122 / 255, 123 / 255], label=label,
+                           alpha=0.7*alpha_mod)
 
         # График значений WOE по группам
         ax_woe = ax_pd.twinx()  # дубликат осей координат
         ax_woe.plot(x, woe, lw=2,
                     color=[37 / 255, 40 / 255, 43 / 255],
-                    label='woe', marker='o')
+                    label='woe', marker='o',
+                    alpha=1*alpha_mod)
 
         # Линия нулевого значения WOE
         ax_woe.plot([0, 1], [0, 0], lw=1,
@@ -572,7 +579,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Границы и сетка для графика WOE
         ax_woe.set_ylim([-max_woe, max_woe])
         ax_woe.set_yticks([round(i, 2) for i in np.linspace(-max_woe, max_woe, 11)])
-        ax_woe.legend(bbox_to_anchor=(1.05, .92), loc=[0.6, -0.25], fontsize=14)
+        ax_woe.legend(bbox_to_anchor=(1.05, .0), loc=[0.6, -0.25], fontsize=14)
 
 
         plt.title('Группировка предиктора {}'.format(stats.loc[0, "predictor"]), fontsize=18)
@@ -581,8 +588,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         n_cat = stats.loc[stats['type'] == 'cat'].shape[0]
 
         if n_cat > 0:
+            label = 'Категориальные' if alpha_mod == 1 else 'Категориальные \nнерегуляризованные'
             ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color='m',
-                               label='Категориальные')
+                               label=label, alpha=alpha_mod)
             ax_pd.legend(bbox_to_anchor=(1.05, 0.76), loc=[0.15, -0.33], fontsize=14)
 
         plt.tight_layout()
@@ -694,6 +702,34 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
             return res
 
+    def _refit_unegularized(self, X, y):
+        for col in X:
+            tmp = self._fit_full_single(X[col], y, alpha=0)
+            self.stats_unregularized = self.stats_unregularized.append(tmp)
+
+    def _fit_full_single(self, x, y, alpha:float=0.):
+        """ Расчет статистики по предиктору от группировки до значений WOE
+        Параметры:
+        ----------
+            x : pd.Series
+                Вектор с предиктором, для которого рассчитываtтся WOE
+            y : pd.Series
+                Вектор со значениями целевой переменной
+            alpha : float, default = 0.
+                Значение коэффициента регляризации группировки
+        Возвращает:
+            stats : pd.DataFrame
+                Таблица со статистикой групп, значениями IV и WOE
+
+        """
+        # Группировка значений предиктора с текущим alpha
+        df_i = self._group_single(x, y, alpha=0)
+        df_i['groups'] = df_i['value'].fillna(self.FILLNA_CONST)
+        df_i['type'] = 'cat'
+        # Обучение и применение группировки к обучающему набору
+        stats = self._fit_single(x, y, df_i)
+        return stats
+
     # Служебные функции
     def _reset_state(self):
         self.trend_coefs = {}
@@ -702,6 +738,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.predictors = []
         self.grouped = _GroupedPredictor()
         self.stats = _GroupedPredictor()
+        self.stats_unregularized = _GroupedPredictor()
         self.FILLNA_CONST = 'пусто'
 
 
@@ -748,19 +785,21 @@ class WoeTransformerRegularized(WoeTransformer):
         """
         self.regularization_stats = _GroupedPredictor()
         self._regularize_categorical_cols(X, y, self.alphas_list, self.n_seeds)
+        # opt_alpha_values.update(self.opt_alpha_values)
+        super().fit(X, y, cat_values, self.opt_alpha_values)
 
-        super().fit(X, y, cat_values, opt_alpha_values)
-
-    def _regularize_categorical_cols(self, X, y, opt_alpha_values, n_seeds):
+    def _regularize_categorical_cols(self, X, y, alphas_list, n_seeds):
         for col in X.columns:
             if X[col].dtype == 'object':
-                temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, opt_alpha_values, n_seeds)
+                temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, alphas_list, n_seeds)
                 self.opt_alpha_values.update({col:temp_alpha})
 
-    def _cat_features_alpha_logloss(self, x, y, alphas_list, seed=100):
+
+
+    def _cat_features_alpha_logloss(self, x:pd.Series, y:pd.Series, alphas_list, seed=100):
         """
         функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
-
+        x
         """
         # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма
         # по рассчитанным WOE из IVWOE
