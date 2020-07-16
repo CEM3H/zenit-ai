@@ -26,11 +26,11 @@ import sklearn as sk
 from sklearn.base import TransformerMixin, BaseEstimator
 
 
-
 class _GroupedPredictor(pd.DataFrame):
     """
     Вспомогательный класс для удобства доступа к некоторым данным
     """
+
     def get_predictor(self, x):
         """
         Получение подвыборки по имени предиктора(ов)
@@ -95,7 +95,6 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
     """
 
-
     def __repr__(self):
         return "WoeTransformer(min_sample_rate=%r, min_count=%r, n_fitted_predictors=%r)" % (self.min_sample_rate, self.min_count, len(self.predictors))
 
@@ -121,7 +120,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Функции интерфейса класса
     # -------------------------
 
-    def fit(self, X, y, cat_values:dict=None, opt_alpha_values:dict=None):
+    def fit(self, X, y, cat_values: dict = None, opt_alpha_values: dict = None):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
@@ -140,9 +139,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Сброс текущего состояния трансформера
         self._reset_state()
         # Сохранение категориальных значений
-        if cat_values is not None: self.cat_values.update({cat_values})
+        if cat_values is not None: self.cat_values.update(cat_values)
         # Инициализация коэффициентов для регуляризации групп
-        if opt_alpha_values is not None: self.opt_alpha_values.update(opt_alpha_values)
+        if opt_alpha_values is not None: self.opt_alpha_values.update(
+            opt_alpha_values)
         # Агрегация значений предикторов
         self._grouping(X, y, self.opt_alpha_values)
         # Расчет WOE и IV
@@ -226,16 +226,21 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         elif isinstance(predictors, (int, str)):
             predictors = [predictors]
 
-        _, axes = plt.subplots(figsize=(10, len(predictors)*5), nrows=len(predictors))
+        _, axes = plt.subplots(
+            figsize=(10, len(predictors)*5), nrows=len(predictors))
         for i, col in enumerate(predictors):
             unregul_stats = self.stats_unregularized.get_predictor(col)
             try:
-                self._plot_single_woe_grouping(self.stats.get_predictor(col), axes[i])
-                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(unregul_stats, axes[i], alpha_mod=0.5)
+                self._plot_single_woe_grouping(
+                    self.stats.get_predictor(col), axes[i])
+                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(
+                    unregul_stats, axes[i], alpha_mod=0.5)
 
             except TypeError:
-                self._plot_single_woe_grouping(self.stats.get_predictor(col), axes)
-                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(unregul_stats, axes, alpha_mod=0.5)
+                self._plot_single_woe_grouping(
+                    self.stats.get_predictor(col), axes)
+                if len(unregul_stats) > 0 and show_unregul: self._plot_single_woe_grouping(
+                    unregul_stats, axes, alpha_mod=0.5)
 
     # -------------------------
     # Внутренние функции над всем датасетом
@@ -252,13 +257,16 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Группировка и расчет показателей
         for col in df.columns[:-1]:
             alpha = opt_alpha_values.get(col, 0)
-            self.grouped = self.grouped.append(self._group_single(df[col], y, alpha))
+            self.grouped = self.grouped.append(
+                self._group_single(df[col], y, alpha))
 
         # Замена пустых значений обратно на np.nan ИЛИ преобразование в числовой тип
         try:
-            self.grouped['value'] = self.grouped['value'].replace({self.FILLNA_CONST:np.nan})
+            self.grouped['value'] = self.grouped['value'].replace(
+                {self.FILLNA_CONST: np.nan})
         except TypeError:
-            self.grouped['value'] = pd.to_numeric(self.grouped['value'], downcast='signed')
+            self.grouped['value'] = pd.to_numeric(
+                self.grouped['value'], downcast='signed')
 
     def _fit_numeric(self, X, y):
         """
@@ -301,11 +309,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         col = x.name
         df = pd.DataFrame({col: x.values,
-                           'target':y.values})
-        grouped_temp = df.groupby(col)['target'].agg(['count', 'sum']).reset_index()
+                           'target': y.values})
+        grouped_temp = df.groupby(col)['target'].agg(
+            ['count', 'sum']).reset_index()
         grouped_temp.columns = ['value', 'sample_count', 'target_count']
-        grouped_temp['sample_rate'] = grouped_temp['sample_count'] / grouped_temp['sample_count'].sum()
-        grouped_temp['target_rate'] = grouped_temp['target_count'] / grouped_temp['sample_count']
+        grouped_temp['sample_rate'] = grouped_temp['sample_count'] / \
+            grouped_temp['sample_count'].sum()
+        grouped_temp['target_rate'] = grouped_temp['target_count'] / \
+            grouped_temp['sample_count']
         grouped_temp.insert(0, 'predictor', col)
 
         # расчет оптимальной целевой для группы, формула и детали в видео
@@ -345,29 +356,35 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                                                     y.loc[num_mask],
                                                     deg=1)})
                 # Расчет монотонных границ
-                gr_subset_num = gr_subset[gr_subset['value'].isin(num_vals)].copy()
+                gr_subset_num = gr_subset[gr_subset['value'].isin(
+                    num_vals)].copy()
                 gr_subset_num['value'] = pd.to_numeric(gr_subset_num['value'])
                 borders = self._monotonic_borders(gr_subset_num,
                                                 self.trend_coefs[col])
-                self.borders.update({col:borders})
+                self.borders.update({col: borders})
                 # Применение границ к сгруппированным данным
-                gr_subset_num['groups'] = pd.cut(gr_subset_num['value'], borders)
+                gr_subset_num['groups'] = pd.cut(
+                    gr_subset_num['value'], borders)
                 gr_subset_num['type'] = 'num'
         except np.linalg.LinAlgError as e:
-            print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
+            print(
+                f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
 
         # Расчет коэффициентов тренда по категориальным значениям предиктора
         if (~num_mask).sum() > 0:
-            gr_subset_cat = gr_subset[~gr_subset['value'].isin(num_vals)].copy()
-            gr_subset_cat['groups'] = gr_subset_cat['value'].fillna(self.FILLNA_CONST)
+            gr_subset_cat = gr_subset[~gr_subset['value'].isin(
+                num_vals)].copy()
+            gr_subset_cat['groups'] = gr_subset_cat['value'].fillna(
+                self.FILLNA_CONST)
             gr_subset_cat['type'] = 'cat'
 
 
         # Объединение числовых и категориальных значений
-        gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
+        gr_subset = pd.concat(
+            [gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
 
         res_i = self._statistic(gr_subset)
-        res_i['groups'].replace({self.FILLNA_CONST:np.nan}, inplace=True)
+        res_i['groups'].replace({self.FILLNA_CONST: np.nan}, inplace=True)
 
         return res_i
 
@@ -402,7 +419,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         DF_num = stats.loc[stats['type'] == 'num']
         if DF_num.shape[0] > 0:
             # Границы (правые) интервалов для разбивки числовых переменных
-            num_bounds = [-np.inf] + list(pd.IntervalIndex(stats.loc[stats['type'] == 'num', 'groups']).right)
+            num_bounds = [-np.inf] + list(pd.IntervalIndex(
+                stats.loc[stats['type'] == 'num', 'groups']).right)
             # Выделение только числовых значений предиктора
             # (похожих на числа и тех, что явно не указаны как категориальные)
             X_woe_num = pd.to_numeric(X_woe[(self._get_nums_mask(X_woe)) &
@@ -434,7 +452,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         else:
             X_woe_oth = pd.Series()
 
-        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]).reindex(orig_index)
+        X_woe = pd.concat([X_woe_num, X_woe_cat, X_woe_oth]
+                          ).reindex(orig_index)
         X_woe = pd.to_numeric(X_woe, downcast='signed')
 
         return X_woe
@@ -467,9 +486,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
             # Расчет показателей накопительным итогом
             DF_j = DF_grouping.loc[min_ind:]
-            DF_iter = DF_j[['sample_rate', 'sample_count', 'target_count']].cumsum()
-            DF_iter['non_target_count'] = DF_iter['sample_count'] - DF_iter['target_count']
-            DF_iter['target_rate'] = DF_iter['target_count'] / DF_iter['sample_count']
+            DF_iter = DF_j[['sample_rate',
+                'sample_count', 'target_count']].cumsum()
+            DF_iter['non_target_count'] = DF_iter['sample_count'] - \
+                DF_iter['target_count']
+            DF_iter['target_rate'] = DF_iter['target_count'] / \
+                DF_iter['sample_count']
 
             # Проверка на соответствие критериям групп
             DF_iter['check'] = ((DF_iter['sample_rate'] >= self.min_sample_rate - 10 ** -9)
@@ -480,19 +502,21 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             # В зависимости от тренда считается скользящий _вперед_ минимум или максимум
             # (в расчете участвуют все наблюдения от текущего до последнего)
             if k11 == 1:
-                DF_iter['pd_gr'] = DF_iter['target_rate'][::-1].rolling(len(DF_iter), min_periods=0).min()[::-1]
+                DF_iter['pd_gr'] = DF_iter['target_rate'][::- \
+                    1].rolling(len(DF_iter), min_periods=0).min()[::-1]
             else:
-                DF_iter['pd_gr'] = DF_iter['target_rate'][::-1].rolling(len(DF_iter), min_periods=0).max()[::-1]
+                DF_iter['pd_gr'] = DF_iter['target_rate'][::- \
+                    1].rolling(len(DF_iter), min_periods=0).max()[::-1]
 
             # Проверка оптимальности границы
             DF_iter['opt'] = DF_iter['target_rate'] == DF_iter['pd_gr']
             DF_iter = pd.concat([DF_j[['value']], DF_iter], axis=1)
             try:
                 min_ind = DF_iter.loc[(DF_iter['check'] == True)
-                                      & (DF_iter['opt'] == True)
-                                    , 'target_rate'].index.values[0]
+                                      & (DF_iter['opt'] == True), 'target_rate'].index.values[0]
                 score_j = DF_iter.loc[min_ind, 'value']
-                if len(R_borders) > 0 and score_j == R_borders[-1]:  # Выход из цикла, если нет оптимальных границ
+                # Выход из цикла, если нет оптимальных границ
+                if len(R_borders) > 0 and score_j == R_borders[-1]:
                     break
             except:
                 break
@@ -503,15 +527,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         if len(R_borders) > 0:
             DF_iter = DF_grouping.loc[DF_grouping['value'] > R_borders[-1]]
             sample_rate_i = DF_iter['sample_rate'].sum()  # доля выборки
-            sample_count_i = DF_iter['sample_count'].sum()  # количество наблюдений
-            target_count_i = DF_iter['target_count'].sum()  # количество целевых
+            # количество наблюдений
+            sample_count_i = DF_iter['sample_count'].sum()
+            # количество целевых
+            target_count_i = DF_iter['target_count'].sum()
             non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
 
             if (sample_rate_i < self.min_sample_rate) or (target_count_i < self.min_count) or (non_target_count_i < self.min_count):
                 R_borders.remove(R_borders[-1])  # удаление последней границы
         else:
             predictor = DF_grouping['predictor'].iloc[0]
-            warnings.warn("Couldn't find any borders for predictor {}.\n Borders set on (-inf, +inf)".format(predictor))
+            warnings.warn(
+                "Couldn't find any borders for predictor {}.\n Borders set on (-inf, +inf)".format(predictor))
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
 
@@ -529,16 +556,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Должен содержать столбцы: 'sample_rate', 'target_rate', 'WOE'
 
         """
-        ## Расчеты
-        x2 = [stats['sample_rate'][:i].sum() for i in range(stats.shape[0])] + [1]  # доля выборки с накоплением
-        x = [np.mean(x2[i:i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
+        # Расчеты
+        x2 = [stats['sample_rate'][:i].sum() for i in range(
+            stats.shape[0])] + [1]  # доля выборки с накоплением
+        x = [np.mean(x2[i:i + 2])
+                     for i in range(len(x2) - 1)]  # средняя точка в группах
 
         # Выделение нужной информации для компактности
         woe = list(stats['WOE'])
         height = list(stats['target_rate'])  # проблемность в группе
         width = list(stats['sample_rate'])  # доля выборки на группу
 
-        ## Визуализация
+        # Визуализация
         if ax_pd is None:
             _, ax_pd = plt.subplots(figsize=(8, 5))
 
@@ -567,7 +596,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         ax_pd.set_ylabel('pd', fontsize=16)
         ax_woe.set_ylabel('woe', fontsize=16)
 
-        ## Расчет границ графика и шага сетки
+        # Расчет границ графика и шага сетки
         max_woe = max([int(abs(i)) + 1 for i in woe])
         max_pd = max([int(i * 10) + 1 for i in height]) / 10
 
@@ -578,11 +607,13 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         # Границы и сетка для графика WOE
         ax_woe.set_ylim([-max_woe, max_woe])
-        ax_woe.set_yticks([round(i, 2) for i in np.linspace(-max_woe, max_woe, 11)])
+        ax_woe.set_yticks([round(i, 2)
+                          for i in np.linspace(-max_woe, max_woe, 11)])
         ax_woe.legend(bbox_to_anchor=(1.05, .0), loc=[0.6, -0.25], fontsize=14)
 
 
-        plt.title('Группировка предиктора {}'.format(stats.loc[0, "predictor"]), fontsize=18)
+        plt.title('Группировка предиктора {}'.format(
+            stats.loc[0, "predictor"]), fontsize=18)
 
         # Для категориальных
         n_cat = stats.loc[stats['type'] == 'cat'].shape[0]
@@ -591,7 +622,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             label = 'Категориальные' if alpha_mod == 1 else 'Категориальные \nнерегуляризованные'
             ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color='m',
                                label=label, alpha=alpha_mod)
-            ax_pd.legend(bbox_to_anchor=(1.05, 0.76), loc=[0.15, -0.33], fontsize=14)
+            ax_pd.legend(bbox_to_anchor=(1.05, 0.76),
+                         loc=[0.15, -0.33], fontsize=14)
 
         plt.tight_layout()
 
@@ -609,15 +641,17 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                               & (~DF_i1['value'].isin(cat_vals))
                              ]
 
-            ## Выделение всех значений предиктора, не отмеченных, как категориальные
+            # Выделение всех значений предиктора, не отмеченных, как категориальные
             DF_i2 = self.grouped.get_predictor(i).copy()
             DF_i2 = DF_i2.loc[(~DF_i2['value'].isin(cat_vals))]
 
-            ## Выбор значений: которые не равны бесконености и при этом не являются числами
-            L = (~(DF_i2['value'] == np.inf) & (~(self._get_nums_mask(DF_i2['value']))))
+            # Выбор значений: которые не равны бесконености и при этом не являются числами
+            L = (~(DF_i2['value'] == np.inf) & (
+                ~(self._get_nums_mask(DF_i2['value']))))
             DF_i2 = DF_i2.loc[L]
             # Объединение найденных значений в одну таблицу
-            DF_i = pd.concat((DF_i1, DF_i2), ignore_index=True).drop_duplicates()
+            DF_i = pd.concat(
+                (DF_i1, DF_i2), ignore_index=True).drop_duplicates()
 
             self.possible_groups = self.possible_groups.append(DF_i)
 
@@ -650,14 +684,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         """
         nothing = 10 ** -6
-        stats = stats.groupby(['predictor', 'groups'],sort=False).agg({'type':'first',
-                                                 'sample_count':'sum',
-                                                 'target_count':'sum',
-                                                 'value':['min', 'max']},
+        stats = stats.groupby(['predictor', 'groups'], sort=False).agg({'type': 'first',
+                                                 'sample_count': 'sum',
+                                                 'target_count': 'sum',
+                                                 'value': ['min', 'max']},
                                                               )
         stats.columns = ['type', 'sample_count', 'target_count', 'min', 'max']
         stats.reset_index(inplace=True)
-        stats['sample_rate'] = stats['sample_count'] / stats['sample_count'].sum()
+        stats['sample_rate'] = stats['sample_count'] / \
+            stats['sample_count'].sum()
         stats['target_rate'] = stats['target_count'] / stats['sample_count']
 
         # Расчет WoE и IV
@@ -667,13 +702,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         stats['non_events_i'] = stats['sample_count'] - stats['target_count']
         stats['event_rate_i'] = stats['target_count'] / (events + nothing)
-        stats['non_event_rate_i'] = stats['non_events_i'] / (non_events + nothing)
+        stats['non_event_rate_i'] = stats['non_events_i'] / \
+            (non_events + nothing)
 
         stats['WOE'] = np.log(stats['non_event_rate_i']
                                      / (stats['event_rate_i'] + nothing)
                                      + nothing)
 
-        stats['IV'] = stats['WOE'] * (stats['non_event_rate_i'] - stats['event_rate_i'])
+        stats['IV'] = stats['WOE'] * \
+            (stats['non_event_rate_i'] - stats['event_rate_i'])
 
         return stats
 
@@ -691,14 +728,16 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         -----------
                 tuple - коэффициенты
         """
-        return {x.name : np.polyfit(x, y, deg=1)}
+        return {x.name: np.polyfit(x, y, deg=1)}
 
     def _regularize_groups(self, grouped, alpha):
             res = grouped.copy()
             Y_global = np.dot(grouped['sample_rate'], grouped['target_rate'])
             K = grouped['sample_rate']
-            res['target_rate'] = (grouped['target_rate'] * K + Y_global * alpha) / (K + alpha)
-            res['target_count'] = np.floor(res['sample_count'] * res['target_rate']).astype(int)
+            res['target_rate'] = (grouped['target_rate']
+                                  * K + Y_global * alpha) / (K + alpha)
+            res['target_count'] = np.floor(
+                res['sample_count'] * res['target_rate']).astype(int)
 
             return res
 
@@ -707,7 +746,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             tmp = self._fit_full_single(X[col], y, alpha=0)
             self.stats_unregularized = self.stats_unregularized.append(tmp)
 
-    def _fit_full_single(self, x, y, alpha:float=0.):
+    def _fit_full_single(self, x, y, alpha: float=0.):
         """ Расчет статистики по предиктору от группировки до значений WOE
         Параметры:
         ----------
@@ -743,7 +782,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
 
     def _get_nums_mask(self, x):
-        if x.apply(lambda x:isinstance(x, str)).sum() == len(x):
+        if x.apply(lambda x: isinstance(x, str)).sum() == len(x):
             return pd.Series(False, index=x.index)
         else:
             mask = pd.to_numeric(x, errors='coerce').notna()
@@ -763,11 +802,12 @@ class WoeTransformerRegularized(WoeTransformer):
             min_count : int, default 3
                     Минимальное количество наблюдений каждого класса в группе
         """
-        self.alphas_list = alphas_list if 0 in alphas_list else [0] + alphas_list
+        self.alphas_list = alphas_list if 0 in alphas_list else [
+            0] + alphas_list
         self.n_seeds = n_seeds
         super().__init__(min_sample_rate, min_count)
 
-    def fit(self, X, y, cat_values:dict=None, opt_alpha_values:dict=None):
+    def fit(self, X, y, cat_values: dict=None, opt_alpha_values: dict=None):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
@@ -791,12 +831,13 @@ class WoeTransformerRegularized(WoeTransformer):
     def _regularize_categorical_cols(self, X, y, alphas_list, n_seeds):
         for col in X.columns:
             if X[col].dtype == 'object':
-                temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, alphas_list, n_seeds)
-                self.opt_alpha_values.update({col:temp_alpha})
+                temp_alpha = self._cat_features_alpha_logloss(
+                    X[col].astype(str), y, alphas_list, n_seeds)
+                self.opt_alpha_values.update({col: temp_alpha})
 
 
 
-    def _cat_features_alpha_logloss(self, x:pd.Series, y:pd.Series, alphas_list, seed=100):
+    def _cat_features_alpha_logloss(self, x: pd.Series, y: pd.Series, alphas_list, seed=100):
         """
         функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha
         x
@@ -804,7 +845,7 @@ class WoeTransformerRegularized(WoeTransformer):
         # задаем промежуточную функцию для WOE преобразования переменной из исходного датафрейма
         # по рассчитанным WOE из IVWOE
         def calc_woe_i(row_value, stats):
-            return stats.loc[stats['groups']==row_value, 'WOE'].values[0]
+            return stats.loc[stats['groups'] == row_value, 'WOE'].values[0]
 
         predictor = x.name
         target = y.name
@@ -830,18 +871,22 @@ class WoeTransformerRegularized(WoeTransformer):
 
                 roc_auc_i = sk.metrics.roc_auc_score(y_test, X_test_WOE)
                 # Подстановка регуляризованной доли целевой вместо каждой группы
-                target_transformed = X_test.replace(dict(zip(df_i['groups'], df_i['target_rate'])))
+                target_transformed = X_test.replace(
+                    dict(zip(df_i['groups'], df_i['target_rate'])))
                 # Запись значений
-                logloss_i.append(sk.metrics.log_loss(y_test, target_transformed.fillna(0)))
+                logloss_i.append(sk.metrics.log_loss(
+                    y_test, target_transformed.fillna(0)))
                 IV_i.append(WOE_i['IV'].sum())
                 GINI_i.append(abs(2 * roc_auc_i - 1))
             # Запись средних значений
             L_logloss_mean.append([alpha_i, np.mean(logloss_i)])
             GINI_IV_mean.append([alpha_i, np.mean(GINI_i), np.mean(IV_i)])
 
-        alpha_GINI_IV = pd.DataFrame(GINI_IV_mean, columns=['alpha', 'GINI', 'IV'])
+        alpha_GINI_IV = pd.DataFrame(GINI_IV_mean, columns=[
+                                     'alpha', 'GINI', 'IV'])
         alpha_GINI_IV.insert(0, 'predictor', predictor)
-        self.regularization_stats = self.regularization_stats.append(alpha_GINI_IV)
+        self.regularization_stats = self.regularization_stats.append(
+            alpha_GINI_IV)
 
         # Индекс значения alpha с наименьшим логлоссом
         min_logloss_ind = np.argmin(L_logloss_mean, axis=0)[1]
