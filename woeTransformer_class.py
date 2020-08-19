@@ -363,7 +363,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
 
         res_i = self._statistic(gr_subset)
-        res_i['groups'].replace({'пусто':np.nan}, inplace=True)
+        is_empty_exists = any(res_i['groups'].astype(str).str.contains('пусто'))
+        if is_empty_exists:
+            res_i['groups'].replace({'пусто':np.nan}, inplace=True)
 
         return res_i
 
@@ -843,4 +845,4 @@ class WoeTransformerRegularized(WoeTransformer):
     #     ax2.legend(loc = "upper right")
     #     plt.grid(True)
     #     plt.title('Распределение logloss, GINI и IV от значения alpha', fontsize=20)
-    #     plt.show() 
+    #     plt.show()
