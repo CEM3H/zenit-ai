@@ -363,7 +363,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         gr_subset = pd.concat([gr_subset_num, gr_subset_cat], axis=0, ignore_index=True)
 
         res_i = self._statistic(gr_subset)
-        if 'пусто' in res_i['groups'].unique():
+        is_empty_exists = any(res_i['groups'].astype(str).str.contains('пусто'))
+        if is_empty_exists:
             res_i['groups'].replace({'пусто':np.nan}, inplace=True)
 
         return res_i
