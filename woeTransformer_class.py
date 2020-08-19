@@ -98,7 +98,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     def __repr__(self):
         return "WoeTransformer(min_sample_rate=%r, min_count=%r, n_fitted_predictors=%r)" % (self.min_sample_rate, self.min_count, len(self.predictors))
 
-    def __init__(self, min_sample_rate=0.05, min_count=3):
+    def __init__(self, min_sample_rate=0.05, min_count=3, cat_values=None, alpha_values=None):
         """
         Инициализация экземпляра класса
 
@@ -112,13 +112,17 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.min_sample_rate = min_sample_rate
         self.min_count = min_count
         self.predictors = []
+        self.cat_values = {}
         self.alpha_values = {}
+
+        if isinstance(cat_values, dict): self.cat_values.update(cat_values)
+        if isinstance(alpha_values, dict): self.alpha_values.update(alpha_values)
 
     # -------------------------
     # Функции интерфейса класса
     # -------------------------
 
-    def fit(self, X, y, cat_values={}, alpha_values={}):
+    def fit(self, X, y, cat_values=None, alpha_values=None):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
@@ -137,10 +141,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Сброс текущего состояния трансформера
         self._reset_state()
         # Сохранение категориальных знаений
-        self.cat_values = cat_values
+        if isinstance(cat_values, dict):
+            self.cat_values.update(cat_values)
         # Инициализация коэффициентов для регуляризации групп
         self.alpha_values = {i:0 for i in X.columns}
-        self.alpha_values.update(alpha_values)
+        if isinstance(alpha_values, dict):
+            self.alpha_values.update(alpha_values)
 
         # Агрегация значений предикторов
         self._grouping(X, y)
@@ -696,7 +702,6 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     def _reset_state(self):
         self.trend_coefs = {}
         self.borders = {}
-        self.cat_values = {}
         self.predictors = []
         self.grouped = _GroupedPredictor()
         self.stats = _GroupedPredictor()
