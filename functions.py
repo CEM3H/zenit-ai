@@ -834,7 +834,7 @@ def build_logistic_regression(X_train, y_train, feat_list,
       pipe = Pipeline([('woe', wt),
                         ('logreg', model_grid)])
     else:
-        pipe = model_grid
+      pipe = model_grid
 
     if param_grid is None:
         param_grid = {'logreg__solver': ['lbfgs'],#['newton-cg', 'sag', 'saga', 'lbfgs'],
