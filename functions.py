@@ -822,11 +822,16 @@ def dump_metrics(feat_list, y_train, y_test,
 def build_logistic_regression(X_train, y_train, feat_list,
                                cv=5, use_woe=True,
                                param_grid=None,
+                               woe_transformer=None,
                                random_seed=42):
     np.random.seed(random_seed)
     model_grid = LogisticRegression(penalty='l2', max_iter=1000, class_weight=None, random_state=random_seed)
     if use_woe:
-        pipe = Pipeline([('woe', WoeTransformer()),
+      if isinstance(woe_transformer, WoeTransformer):
+        wt = woe_transformer
+      else:
+        wt = WoeTransformer()
+        pipe = Pipeline([('woe', wt),
                          ('logreg', model_grid)])
     else:
         pipe = model_grid
