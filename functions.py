@@ -823,7 +823,8 @@ def build_logistic_regression(X_train, y_train, feat_list,
                                cv=5, use_woe=True,
                                param_grid=None,
                                woe_transformer=None,
-                               random_seed=42):
+                               random_seed=42,
+                               **fit_params):
     np.random.seed(random_seed)
     model_grid = LogisticRegression(penalty='l2', max_iter=1000, class_weight=None, random_state=random_seed)
     if use_woe:
@@ -841,7 +842,7 @@ def build_logistic_regression(X_train, y_train, feat_list,
                       'logreg__C': [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0]}
     # подбор параметров
     grid_search = GridSearchCV(pipe, param_grid=param_grid, scoring='roc_auc', cv=cv)
-    grid_search.fit(X_train[feat_list], y_train)
+    grid_search.fit(X_train[feat_list], y_train, **fit_params)
 
     return grid_search.best_estimator_
 
