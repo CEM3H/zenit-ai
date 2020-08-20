@@ -480,7 +480,7 @@ def positive_coef_drop(X, y, gini_data, iv_ordered_feats, seed=42, verbose=False
         predictors = tqdm(predictors)
     for _ in predictors:  # исключение предикторов с положительными коэфициентами
         # подбор параметров
-        skf = StratifiedKFold(n_splits=5, shuffle=False, random_state=seed)
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         model_grid = LogisticRegression(
             penalty='l2', max_iter=500, random_state=seed)
         param_grid_model = {'solver': ['lbfgs'],  # ['newton-cg', 'sag', 'saga', 'lbfgs'],
