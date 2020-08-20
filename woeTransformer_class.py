@@ -180,7 +180,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 print(f"Column is not in fitted predictors list: {i}")
         return transformed
 
-    def fit_transform(self, X, y, cat_values={}):
+    def fit_transform(self, X, y, cat_values={}, alpha_values={}):
         """
         Обучение трансформера и расчет всех промежуточных данных
         с последующим примененим группировки к тем же данным
@@ -202,7 +202,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
 
-        self.fit(X, y, cat_values=cat_values)
+        self.fit(X, y, cat_values=cat_values, alpha_values=alpha_values)
         return self.transform(X)
 
     def plot_woe(self, predictors=None):
