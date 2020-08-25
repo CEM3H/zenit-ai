@@ -1,8 +1,11 @@
 # Default ignored files
 .DS_store
-.ipynb_checkpoints	
+.ipynb_checkpoints
 /workspace.xml
 .idea
 .idea/
 .vscode/
 __pycache__
+
+
+sandbox.py
