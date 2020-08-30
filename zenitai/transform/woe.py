@@ -1,5 +1,5 @@
 """
-Функции и классы для проведение WoE-преобразований
+Функции и классы для проведения WoE-преобразований
 
 """
 
@@ -81,6 +81,7 @@ class WoeTransformer(TransformerMixin):
         transform
                 Применение обученного трансформера к новым данным
         plot_woe
+                Отрисовка графиков группировки
 
     TODO:
         обработка серий наравне с датафреймами
@@ -97,8 +98,9 @@ class WoeTransformer(TransformerMixin):
     """
 
     def __repr__(self):
-        cat_len = len(self.cat_values)
-        alpha_len = len(self.alpha_values)
+        cat_len = len(list(filter(lambda x: len(x) != 1, self.cat_values.values())))
+        alpha_len = len(list(filter(lambda x: x != 0, self.alpha_values.values())))
+
         return (
             "{}(min_sample_rate={}, min_count={}, n_fitted_predictors={}, "
             "n_predictors_with_categories={}, n_predictors_with_alphas={})".format(
@@ -142,6 +144,8 @@ class WoeTransformer(TransformerMixin):
                     выделить в категории
                     По умолчанию все строковые и пропущенные значения
                     выделяются в отдельные категории
+            alpha_values : dict of floats
+                    Словарь со значнеиями коэффициента для регуляризации групп
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
@@ -161,7 +165,7 @@ class WoeTransformer(TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Применение обученного трансформера к новым данным
 
@@ -170,7 +174,9 @@ class WoeTransformer(TransformerMixin):
             X : pd.DataFrame
                     Датафрейм, который нужно преобразовать
                     Предикторы, которые не были сгруппированы ранее, будут
-                    проигнорированы и выведется сообщение
+                    проигнорированы и выведется
+            y : None
+                    Параметр игнорируется. Оставлен для совместимости с skikit-learn
         Возвращает:
         -----------
             transformed : pd.DataFrame
@@ -460,12 +466,11 @@ class WoeTransformer(TransformerMixin):
                  Правые границы групп для последующей группировки
 
         """
-        k01, k11 = (1, 1) if p[0] > 0 else (0, -1)
+        _, k11 = (1, 1) if p[0] > 0 else (0, -1)
         R_borders = []
         min_ind = 0  # минимальный индекс. Начальные условия
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
-            pd_gr_i = k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
 
             # Расчет показателей накопительным итогом
             DF_j = DF_grouping.loc[min_ind:]
@@ -495,7 +500,6 @@ class WoeTransformer(TransformerMixin):
                 min_ind = DF_iter.loc[
                     (DF_iter["check"] == True) & (DF_iter["opt"] == True), "target_rate"
                 ].index.values[0]
-                pd_gr_i = DF_iter.loc[min_ind, "target_rate"]
                 score_j = DF_iter.loc[min_ind, "value"]
                 if len(R_borders) > 0 and score_j == R_borders[-1]:  # Выход из цикла, если нет оптимальных границ
                     break
@@ -723,7 +727,7 @@ class WoeTransformerRegularized(WoeTransformer):
         self.alphas = alphas
         self.n_seeds = n_seeds
 
-    def fit(self, X, y, cat_values={}, alpha_values={}):
+    def fit(self, X, y, cat_values={}, alpha_values={}, verbose=False):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
@@ -745,6 +749,8 @@ class WoeTransformerRegularized(WoeTransformer):
         self.regularization_stats = _GroupedPredictor()
 
         for col in X.columns:
+            if verbose:
+                print(col)
             temp_alpha = self._cat_features_alpha_logloss(X[col].astype(str), y, self.alphas, self.n_seeds)
             self.alpha_values.update({col: temp_alpha})
 
