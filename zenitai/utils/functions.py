@@ -223,7 +223,7 @@ def plot_roc(facts:list, preds:list, labels:list=None, suptitle:str=None):
     if not len(facts) == len(preds):
         raise ValueError('Length of `facts` is not equal to lenght of `preds`')
     if labels is None:
-        labels = [f'label_{i}' for i in range(preds)]
+        labels = [f'label_{i}' for i in range(len(preds))]
     elif len(labels) < len(facts):
         labels.extend([f"label_{i}" for i in range(len(facts) - len(labels))])
 
