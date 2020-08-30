@@ -520,3 +520,57 @@ def positive_coef_drop(X, y, gini_data, iv_ordered_feats, seed=42, verbose=False
             break
 
     return predictors
+
+
+def get_roc_curves(facts:list, preds:list, labels:list=None, suptitle:str=None):
+    """ Отрисовка произвольного количества ROC-кривых на одном графике
+    Например, чтобы показать качество модели на трейне и тесте
+    Входные данные:
+    ---------------
+        facts : list of arrays
+                Список, состоящий из массивов фактических меток классов (0 или 1)
+        preds : list of arrays
+                Список состоящий из массивов предсказаний классификатора (результаты метода
+                `predict_proba()`)
+        labels : list, default None
+                Список меток для графиков
+        suptitle : str, default None
+                Над-заголовок для графика
+    """
+    if not len(facts) == len(preds):
+        raise ValueError('Length of `facts` is not equal to lenght of `preds`')
+    if labels is None:
+        labels = [f'label_{i}' for i in range(len(preds))]
+    elif len(labels) < len(facts):
+        labels.extend([f"label_{i}" for i in range(len(facts) - len(labels))])
+
+    roc_list = [] # [(FPR_train, TPR_train, thresholds_train), ...]
+    gini_list = [] # [Gini_train, Gini_validate, Gini_test]
+
+    lw=2 # толщина линий
+
+    # Построение графика ROC
+    fig = plt.figure(figsize=(8, 8)) # размер рисунка
+
+    for fact, p, label in zip(facts, preds, labels):
+        fpr, tpr, _ = roc_curve(fact, p)
+        gini = auc_to_gini(roc_auc_score(fact, p))
+        roc_list.append((fpr, tpr))
+        gini_list.append(gini)
+        plt.plot(fpr, tpr, lw=lw,
+                 label=f'{label} (Gini = {gini:.2%})', alpha=0.5)
+
+    plt.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--', alpha=0.5)
+
+    plt.xlim([-0.05, 1.05]) # min и max значения по осям
+    plt.ylim([-0.05, 1.05])
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.grid(True)
+    plt.xlabel('False Positive Rate', fontsize=14)
+    plt.ylabel('True Positive Rate', fontsize=14)
+    plt.title('ROC curves', fontsize=16)
+    plt.legend(loc='lower right', fontsize=16)
+    if suptitle is not None:
+        plt.suptitle(suptitle, fontsize=20)
+    return fig
