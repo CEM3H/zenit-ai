@@ -354,7 +354,8 @@ def build_logistic_regression(X_train, y_train, feat_list,
                                param_grid=None,
                                woe_transformer=None,
                                random_seed=42,
-                               **fit_params):
+                               return_best=True,
+                               **fit_params,):
     np.random.seed(random_seed)
     model_grid = LogisticRegression(penalty='l2', max_iter=1000, class_weight=None, random_state=random_seed)
     if use_woe:
@@ -374,8 +375,10 @@ def build_logistic_regression(X_train, y_train, feat_list,
     grid_search = GridSearchCV(pipe, param_grid=param_grid, scoring='roc_auc', cv=cv)
     grid_search.fit(X_train[feat_list], y_train, **fit_params)
 
-    return grid_search.best_estimator_
-
+    if return_best:
+        return grid_search.best_estimator_
+    else:
+        return grid_search
 
 def get_gini_and_auc(facts:list, preds:list, plot=True, **kwargs):
     gini_list = []
