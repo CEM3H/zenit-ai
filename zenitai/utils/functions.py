@@ -15,7 +15,6 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearc
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from woeTransformer_class import WoeTransformer
 from tqdm import tqdm
 from IPython.display import display
 
@@ -522,7 +521,7 @@ def positive_coef_drop(X, y, gini_data, iv_ordered_feats, seed=42, verbose=False
     return predictors
 
 
-def get_roc_curves(facts:list, preds:list, labels:list=None, suptitle:str=None):
+def get_roc_curves(facts:list, preds:list, labels:list=None, suptitle:str=None, ax=None, **kwargs):
     """ Отрисовка произвольного количества ROC-кривых на одном графике
     Например, чтобы показать качество модели на трейне и тесте
     Входные данные:
@@ -536,6 +535,9 @@ def get_roc_curves(facts:list, preds:list, labels:list=None, suptitle:str=None):
                 Список меток для графиков
         suptitle : str, default None
                 Над-заголовок для графика
+        ax : matplotlib Axes object
+        **kwargs : параметры для передачи в plt.plot
+
     """
     if not len(facts) == len(preds):
         raise ValueError('Length of `facts` is not equal to lenght of `preds`')
@@ -547,30 +549,32 @@ def get_roc_curves(facts:list, preds:list, labels:list=None, suptitle:str=None):
     roc_list = [] # [(FPR_train, TPR_train, thresholds_train), ...]
     gini_list = [] # [Gini_train, Gini_validate, Gini_test]
 
-    lw=2 # толщина линий
+    # Задаем параметры графиков
+    ax = ax or plt.gca()   # используем набор осей из входных данных или текущую фигуру
+    lw = kwargs.pop('lw', 2)  # толщина линий
+    alpha = kwargs.pop('alpha', 0.5) # прозрачность
 
     # Построение графика ROC
-    fig = plt.figure(figsize=(8, 8)) # размер рисунка
+    # fig, ax = plt.subplots(1,1, figsize=(8, 8), ) # размер рисунка
 
     for fact, p, label in zip(facts, preds, labels):
         fpr, tpr, _ = roc_curve(fact, p)
         gini = auc_to_gini(roc_auc_score(fact, p))
         roc_list.append((fpr, tpr))
         gini_list.append(gini)
-        plt.plot(fpr, tpr, lw=lw,
-                 label=f'{label} (Gini = {gini:.2%})', alpha=0.5)
+        ax.plot(fpr, tpr, label=f'{label} (Gini = {gini:.2%})', lw=lw, alpha=alpha, **kwargs)
 
-    plt.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--', alpha=0.5)
+    ax.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--', alpha=alpha)
 
-    plt.xlim([-0.05, 1.05]) # min и max значения по осям
-    plt.ylim([-0.05, 1.05])
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.grid(True)
-    plt.xlabel('False Positive Rate', fontsize=14)
-    plt.ylabel('True Positive Rate', fontsize=14)
-    plt.title('ROC curves', fontsize=16)
-    plt.legend(loc='lower right', fontsize=16)
+    ax.set_xlim([-0.05, 1.05]) # min и max значения по осям
+    ax.set_ylim([-0.05, 1.05])
+    ax.tick_params(labelsize=16)
+    # ax.set_yticks(fontsize=16)
+    ax.grid(True)
+    ax.set_xlabel('False Positive Rate', fontsize=14)
+    ax.set_ylabel('True Positive Rate', fontsize=14)
+    ax.set_title('ROC curves', fontsize=16)
+    ax.legend(loc='lower right', fontsize=16)
     if suptitle is not None:
-        plt.suptitle(suptitle, fontsize=20)
-    return fig
+        ax.suptitle(suptitle, fontsize=20)
+    return ax
