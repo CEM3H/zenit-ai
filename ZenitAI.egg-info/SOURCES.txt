@@ -1,4 +1,5 @@
 setup.py
+zenitai/__init__.py
 zenitai.egg-info/PKG-INFO
 zenitai.egg-info/SOURCES.txt
 zenitai.egg-info/dependency_links.txt
