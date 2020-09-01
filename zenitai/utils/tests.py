@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-def compareResultsTest(fun1, fun2, exact=True, **kwargs):
+def compare_results_test(fun1, fun2, exact=True, **kwargs):
     """
     Сравнение результатов двух функций, которые возвращают pd.DataFrame или list
 
@@ -65,7 +65,7 @@ def compareResultsTest(fun1, fun2, exact=True, **kwargs):
     return [np.sum(np.sum(res1)), np.sum(np.sum(res2))]
 
 
-def compareTimeTest(fun1, fun2, n_iter=100, *args, **kwargs):
+def compare_time_test(fun1, fun2, n_iter=100, *args, **kwargs):
     """
     Сравнение времени работы двух функций
 

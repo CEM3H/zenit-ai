@@ -5,6 +5,36 @@
 import numpy as np
 import pandas as pd
 
+
+def read_from_mssql(path, **kwargs):
+    df = pd.read_csv(path, encoding='utf-8', sep=';', dtype='object', **kwargs)
+    print(df.shape)
+    return df
+
+# Comes from 1. Superscore_Zenit_Features.ipynb, cell
+def compare_series(s1, s2, ret_index=False):
+    '''Сравнивает два объекта pd.Series на предмет наличия совпадающих
+    элементов
+    Вход:
+        - s1, s2 : pd.Series, объекты для сравнения
+        - ret_index : bool, модификатор вывода результатов
+                        * True - возвращаются только
+    Выход:
+        - общие элементы из s1
+        - общие элементы из s2
+        - элементы, уникальные для s1
+        - элементы, уникальные для s2
+    '''
+    assert type(s1) == pd.Series
+    assert type(s2) == pd.Series
+
+    s1_common_elems = s1[s1.isin(s2)]
+    s2_common_elems = s2[s2.isin(s1)]
+    s1_only = s1[~s1.isin(s2)]
+    s2_only = s2[~s2.isin(s1)]
+
+    return s1_common_elems, s2_common_elems, s1_only, s2_only
+
 #%%
 def generate_train_data():
     digit_weighs = np.ones(10) / 10
@@ -12,7 +42,7 @@ def generate_train_data():
     small_cat_size = 10
     major_part = 0.9
     minor_part = 1 - major_part
-    
+
     res = pd.DataFrame({
          'digits':np.random.choice(range(10), 10000),
          'integers':np.random.choice(range(100), 10000),
@@ -36,16 +66,16 @@ def generate_train_data():
          'single_nan': np.full(10000, np.nan),
          'target':np.random.choice(range(2), 10000, p=[0.95, .05])})
 
-    
+
     return res
-    
+
 def generate_test_data():
     digit_weighs = [.15,.15,.05,.05, .1,.1,.1,.01,.19,.1]
     unequal_frequencies = [0.1, 0.6, 0.3]
     small_cat_size = 10
     major_part = 0.8
     minor_part = 1 - major_part
-    
+
     res = pd.DataFrame({
          'digits':np.random.choice(range(10), 10000,
                                     p=[.15,.15,.05,.05, .1,.1,.1,.01,.19,.1]),   #изменены веса
@@ -60,7 +90,7 @@ def generate_test_data():
          'integers_w_letters':np.hstack((np.random.choice(range(10), 9000),
                                      np.array(['d', 'X']*500))),                 # одна категория заменена
          'integers_w_letters_obj':np.hstack((np.array(np.random.choice(range(10), 9000), int).astype(str),
-                                         np.array(['d', 'f', 'y', 'z']*250, object))),   # добавлены 2 новых 
+                                         np.array(['d', 'f', 'y', 'z']*250, object))),   # добавлены 2 новых
          'letters':np.random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 10000),
          'letters_uneq_freq': np.random.choice(['a', 'b', 'c'], 10000, p=[0.1, 0.6, 0.3]),   #изменены веса
          'letters_w_na':np.hstack((np.array(np.random.choice(['a', 'b', 'c', 'd'], 9000), object),
@@ -70,5 +100,5 @@ def generate_test_data():
          'single_letter': np.array(['x']*10000),
          'single_nan': np.full(10000, np.nan),
          'target':np.random.choice(range(2), 10000, p=[0.95, .05])})
-    
+
     return res
