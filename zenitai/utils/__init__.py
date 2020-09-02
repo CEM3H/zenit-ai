@@ -1,3 +1,7 @@
+"""
+Hello World!
+"""
+
 from . import functions
 from .functions import get_corr_matrices
 from .functions import select_feats
@@ -9,7 +13,7 @@ from .functions import select_features_corr
 from .functions import styler_float
 from .functions import select_features_hierarchy
 from .functions import check_feat_stats
-from .functions import extractSubPmtStr
+from .functions import extract_sub_pmt_str
 from .functions import select_feats_corr
 from .functions import split_train_test_valid
 from .functions import get_worst_status
@@ -42,7 +46,7 @@ __all__ = [
     "styler_float",
     "select_features_hierarchy",
     "check_feat_stats",
-    "extractSubPmtStr",
+    "extract_sub_pmt_str",
     "select_feats_corr",
     "split_train_test_valid",
     "get_gini_and_auc",

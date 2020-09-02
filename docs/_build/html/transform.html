@@ -1,0 +1,596 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Transform Module &mdash; документация ZenitAI 0.3a0</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/translations.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Utils Module" href="utils.html" />
+    <link rel="prev" title="Welcome to ZenitAI’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> ZenitAI
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Содержание:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZenitAI</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/transform.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-zenitai.transform">
+<span id="transform-module"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module<a class="headerlink" href="#module-zenitai.transform" title="Ссылка на этот заголовок">¶</a></h1>
+<dl class="py class">
+<dt id="zenitai.transform.WoeTransformer">
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">WoeTransformer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer" title="Ссылка на это определение">¶</a></dt>
+<dd><blockquote>
+<div><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
+</div></blockquote>
+<p>Класс для построения и применения WOE группировки к датасету</p>
+<p><strong>Параметры</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Методы</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>fit</dt><dd><p>Обучение трансформера, сохранение всех нужных данных</p>
+</dd>
+<dt>fit_transform</dt><dd><p>Обучение трансформера и применение группировки к данным</p>
+</dd>
+<dt>transform</dt><dd><p>Применение обученного трансформера к новым данным</p>
+</dd>
+<dt>plot_woe</dt><dd><p>Отрисовка графиков с результатами группировки</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Атрибуты</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt>predictors<span class="classifier">list</span></dt><dd><p>Список предикторов, на которых была построена группировка</p>
+</dd>
+<dt>stats<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты WOE-группировки по всем предикторам</p>
+</dd>
+<dt>grouped<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты агрегации предикторов</p>
+</dd>
+<dt>cat_values<span class="classifier">dict of lists</span></dt><dd><p>Словарь со списками категорий по предикторам, переданный при обучении</p>
+</dd>
+<dt>alpha_values<span class="classifier">dict of floats</span></dt><dd><p>Словарь со значениями alpha для регуляризации групп</p>
+</dd>
+<dt>trend_coefs<span class="classifier">dict of np.arrays</span></dt><dd><p>Коэффициенты тренда по количественным предикторам</p>
+</dd>
+<dt>borders<span class="classifier">dict of lists</span></dt><dd><p>Монотонные границы по количественным предикторам</p>
+</dd>
+<dt>possible groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о значениях предиктора, которые могли бы стать
+отдельными категориями</p>
+</dd>
+<dt>bad_groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о группах, которые не удовлетворяют условиям</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">cat_values</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">alpha_values</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.fit" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Обучение трансформера и расчет всех промежуточных данных</p>
+<blockquote>
+<div><dl class="simple">
+<dt>X<span class="classifier">pd.DataFrame</span></dt><dd><p>Датафрейм с предикторами, которые нужно сгруппировать</p>
+</dd>
+<dt>y<span class="classifier">pd.Series</span></dt><dd><p>Целевая переменная</p>
+</dd>
+<dt>cat_values<span class="classifier">dict, optional</span></dt><dd><p>Словарь списков с особыми значениями, которые нужно
+выделить в категории
+По умолчанию все строковые и пропущенные значения
+выделяются в отдельные категории</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.fit_transform">
+<code class="sig-name descname">fit_transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">cat_values</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">alpha_values</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.fit_transform" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Обучение трансформера и расчет всех промежуточных данных
+с последующим примененим группировки к тем же данным</p>
+<blockquote>
+<div><dl class="simple">
+<dt>X<span class="classifier">pd.DataFrame</span></dt><dd><p>Датафрейм с предикторами, которые нужно сгруппировать</p>
+</dd>
+<dt>y<span class="classifier">pd.Series</span></dt><dd><p>Целевая переменная</p>
+</dd>
+<dt>cat_values<span class="classifier">dict, optional</span></dt><dd><p>Словарь списков с особыми значениями, которые нужно
+выделить в категории
+По умолчанию все строковые и пропущенные значения
+выделяются в отдельные категории</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>transformed<span class="classifier">pd.DataFrame</span></dt><dd><p>Преобразованный датасет</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.plot_woe">
+<code class="sig-name descname">plot_woe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">predictors</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.plot_woe" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Отрисовка одного или нескольких графиков группировки</p>
+<blockquote>
+<div><dl class="simple">
+<dt>predictors<span class="classifier">str/list-like, default None</span></dt><dd><p>Предиктор(ы), по которым нужны графики
+– если str - отрисовывается один график
+– если list-like - отрисовываются графики из списка
+– если None - отрисовываются все сгруппированные предикторы</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.transform" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Применение обученного трансформера к новым данным</p>
+<blockquote>
+<div><dl class="simple">
+<dt>X<span class="classifier">pd.DataFrame</span></dt><dd><p>Датафрейм, который нужно преобразовать
+Предикторы, которые не были сгруппированы ранее, будут
+проигнорированы и выведется сообщение</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>transformed<span class="classifier">pd.DataFrame</span></dt><dd><p>Преобразованный датасет</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="zenitai.transform.WoeTransformerRegularized">
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">WoeTransformerRegularized</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">alphas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_seeds</span><span class="o">=</span><span class="default_value">30</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformerRegularized" title="Ссылка на это определение">¶</a></dt>
+<dd><blockquote>
+<div><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">zenitai.transform._woe.WoeTransformer</span></code></p>
+</div></blockquote>
+<p>Класс для построения и применения WOE группировки к датасету</p>
+<p><strong>Параметры</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+<dt>alphas<span class="classifier">list</span></dt><dd><p>Список значений коэффициента регуляризации alpha для подбора</p>
+</dd>
+<dt>n_seeds<span class="classifier">int, default 30</span></dt><dd><p>Количество итераций для расчета по каждому из значений alpha</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt><strong>Методы</strong>:</dt><dd><dl class="simple">
+<dt>fit</dt><dd><p>Обучение трансформера, сохранение всех нужных данных</p>
+</dd>
+<dt>fit_transform</dt><dd><p>Обучение трансформера и применение группировки к данным</p>
+</dd>
+<dt>transform</dt><dd><p>Применение обученного трансформера к новым данным</p>
+</dd>
+<dt>plot_woe</dt><dd><p>Отрисовка графиков с результатами группировки</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>Атрибуты</strong>:</dt><dd><dl class="simple">
+<dt>predictors<span class="classifier">list</span></dt><dd><p>Список предикторов, на которых была построена группировка</p>
+</dd>
+<dt>stats<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты WOE-группировки по всем предикторам</p>
+</dd>
+<dt>grouped<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты агрегации предикторов</p>
+</dd>
+<dt>cat_values<span class="classifier">dict of lists</span></dt><dd><p>Словарь со списками категорий по предикторам, переданный при обучении</p>
+</dd>
+<dt>alpha_values<span class="classifier">dict of floats</span></dt><dd><p>Словарь со значениями alpha для регуляризации групп</p>
+</dd>
+<dt>trend_coefs<span class="classifier">dict of np.arrays</span></dt><dd><p>Коэффициенты тренда по количественным предикторам</p>
+</dd>
+<dt>borders<span class="classifier">dict of lists</span></dt><dd><p>Монотонные границы по количественным предикторам</p>
+</dd>
+<dt>possible groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о значениях предиктора, которые могли бы стать
+отдельными категориями</p>
+</dd>
+<dt>bad_groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о группах, которые не удовлетворяют условиям</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformerRegularized.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">cat_values</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">alpha_values</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformerRegularized.fit" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Обучение трансформера и расчет всех промежуточных данных</p>
+<blockquote>
+<div><dl class="simple">
+<dt>X<span class="classifier">pd.DataFrame</span></dt><dd><p>Датафрейм с предикторами, которые нужно сгруппировать</p>
+</dd>
+<dt>y<span class="classifier">pd.Series</span></dt><dd><p>Целевая переменная</p>
+</dd>
+<dt>cat_values<span class="classifier">dict, optional</span></dt><dd><p>Словарь списков с особыми значениями, которые нужно
+выделить в категории
+По умолчанию все строковые и пропущенные значения
+выделяются в отдельные категории</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.cat_features_alpha_logloss">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">cat_features_alpha_logloss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">predictor</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">plot_i</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.cat_features_alpha_logloss" title="Ссылка на это определение">¶</a></dt>
+<dd><p>функция расчета IV, GINI и logloss для категориальных переменных с корректировкой целевой по alpha</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.group_plot">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">group_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DF_result</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.group_plot" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Построение графика по группировке предиктора</p>
+<blockquote>
+<div><dl>
+<dt>DF_result<span class="classifier">pandas.DataFrame</span></dt><dd><dl class="simple">
+<dt>Статистика по каждой группе (результат работы функции statistic):</dt><dd><p>минимальное, максимальное значение, доля от общего объема выборки,
+количество и доля целевых и нецелевых событий в каждой группе,
+WOE и IV каждой группы</p>
+</dd>
+</dl>
+<p>Должен содержать столбцы: „sample_rate“, „target_rate“, „WOE“</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>None</dt><dd><p>Не возвращает ничего</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.grouping">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">grouping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DF_data_i</span></em>, <em class="sig-param"><span class="n">low_acc</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.grouping" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Агрегация данных по значениям предиктора. Рассчитывает количество наблюдений,
+количество целевых событий, долю группы от общего числа наблюдений и долю целевых в группе</p>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_data_i<span class="classifier">pandas.DataFrame</span></dt><dd><p>Таблица данных для агрегации, должна содержать поля „predictor“ и „target“.
+Поле target при этом должно состоять из 0 и 1, где 1 - целевое событие</p>
+</dd>
+<dt>low_acc<span class="classifier">int, default None</span></dt><dd><p>Параметр для округления значений предиктора.
+Если None, то предиктор не округляется.
+Если целое неотрицательное число, параметр используется для определения
+количества знаков после запятой, остальные значения игнорируются</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_grouping<span class="classifier">pandas.DataFrame</span></dt><dd><p>Таблица с агрегированными данными по значениям предиктора</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.monotonic_borders">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">monotonic_borders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DF_grouping</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.monotonic_borders" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Определение оптимальных границ групп предиктора (монотонный тренд)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_grouping<span class="classifier">pandas.DataFrame</span></dt><dd><p>Агрегированные данные по значениям предиктора (результат работы
+фунции grouping, очищенный от категориальных значений).
+Должен содержать поля „predictor“, „sample_count“, „target_count“,
+„sample_rate и „target_rate“</p>
+</dd>
+<dt>p<span class="classifier">list-like, длиной в 2 элемента</span></dt><dd><p>Коэффициенты линейного тренда значений предиктора</p>
+</dd>
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>R_borders<span class="classifier">list</span></dt><dd><p>Правые границы групп для последующей группировки</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.statistic">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">statistic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DF_groups</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.statistic" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Расчет статистики по группам предиктора: минимальное, максимальное значение, доля от
+общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
+А также расчет WOE и IV каждой группы</p>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_groups<span class="classifier">pandas.DataFrame</span></dt><dd><p>Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
+уникальных значений предиктора.
+Должен содержать столбцы: „sample_count“, „target_count“, „groups“</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_statistic<span class="classifier">pandas.DataFrame</span></dt><dd><p>Агрегированные данные по каждой группе</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.woe_apply">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">woe_apply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">S_data</span></em>, <em class="sig-param"><span class="n">DF_groups</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.woe_apply" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Применение группировки и WoE-преобразования</p>
+<dl class="simple">
+<dt>Входные данные:—————</dt><dd><dl class="simple">
+<dt>S_data<span class="classifier">pandas.Series</span></dt><dd><p>Значения предиктора</p>
+</dd>
+<dt>DF_groups<span class="classifier">pandas.DataFrame</span></dt><dd><p>Данные о группировке предиктора</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<blockquote>
+<div><dl class="simple">
+<dt>X_woe<span class="classifier">pandas.DataFrame</span></dt><dd><p>WoE-преобразования значений предиктора
+WoE = 0, если группа не встречалась в обучающей выборке</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.transform.woe_transformer">
+<code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">woe_transformer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">cat_values</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">errors</span><span class="o">=</span><span class="default_value">'skip'</span></em>, <em class="sig-param"><span class="n">low_accuracy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.woe_transformer" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Группировка значений предиктора, определение оптимальных границ и расчет WOE и IV</p>
+<blockquote>
+<div><dl class="simple">
+<dt>x<span class="classifier">pandas.Series</span></dt><dd><p>Mассив числовых значений предиктора. Не должен содержать пропущенных
+значений, но может сочетать строковые и числовые</p>
+</dd>
+<dt>y<span class="classifier">pandas.Series</span></dt><dd><p>Mассив меток класса (0, 1)</p>
+</dd>
+<dt>cat_values: list</dt><dd><p>Категориальные значения (пустышки и несравнимые значения).
+Элементы списка должны быть строками</p>
+</dd>
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+<dt>errors<span class="classifier">str, defaulf „skip“</span></dt><dd><dl class="simple">
+<dt>Способ обработки ошибок:</dt><dd><p>„skip“ - не возвращать ничего в случае ошибки
+„origin“ - вернуть исходные значения предиктора
+„raise“ - бросить исключение</p>
+</dd>
+</dl>
+</dd>
+<dt>low_accuracy<span class="classifier">int, default None</span></dt><dd><p>Режим пониженной точности (округление при группировке)
+Если None, то предиктор не округляется.
+Если целое неотрицательное число, параметр используется для определения
+количества знаков после запятой, остальные значения игнорируются</p>
+</dd>
+<dt>plot<span class="classifier">bool, default True</span></dt><dd><p>Включение/выключение визуализации группировки</p>
+</dd>
+<dt>verbose<span class="classifier">bool, default True</span></dt><dd><p>Включение.выключение доп. информации по группировке</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>DF_result<span class="classifier">pandas.DataFrame</span></dt><dd><p>Таблица с итоговой группировкой и статистикой</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utils Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to ZenitAI’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Авторские права 2020, ZenitAI Team
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

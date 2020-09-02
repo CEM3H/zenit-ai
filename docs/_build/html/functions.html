@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Functions Submodule &mdash; документация ZenitAI 0.3a0</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/translations.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Metrics Submodule" href="metrics.html" />
+    <link rel="prev" title="Utils Module" href="utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> ZenitAI
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Содержание:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="transform.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Metrics</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Tests</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils_.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Submodule</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZenitAI</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code> Submodule</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/functions.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="functions-submodule">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code> Submodule<a class="headerlink" href="#functions-submodule" title="Ссылка на этот заголовок">¶</a></h1>
+<span class="target" id="module-zenitai.utils.functions"></span><p>Модуль с полезными функциями</p>
+<dl class="py function">
+<dt id="zenitai.utils.functions.build_logistic_regression">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">build_logistic_regression</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X_train</span></em>, <em class="sig-param"><span class="n">y_train</span></em>, <em class="sig-param"><span class="n">feat_list</span></em>, <em class="sig-param"><span class="n">cv</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">use_woe</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">param_grid</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">woe_transformer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">random_seed</span><span class="o">=</span><span class="default_value">42</span></em>, <em class="sig-param"><span class="n">return_best</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">fit_params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.build_logistic_regression" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.check_feat_stats">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">check_feat_stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">feat</span></em>, <em class="sig-param"><span class="n">val_counts</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.check_feat_stats" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Расчет описательных статистик признака</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.cramers_corr">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">cramers_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x1</span></em>, <em class="sig-param"><span class="n">x2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.cramers_corr" title="Ссылка на это определение">¶</a></dt>
+<dd><p>расчет V–коэффициент Крамера
+x1 - переменная 1
+x2 - переменная 2</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.extract_sub_pmt_str">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">extract_sub_pmt_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">pmtstr</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pmtstr_enddt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">retro_dt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">depth</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">12</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="headerlink" href="#zenitai.utils.functions.extract_sub_pmt_str" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты</p>
+<blockquote>
+<div><dl class="simple">
+<dt>df<span class="classifier">pandas.Dataframe</span></dt><dd><p>Таблица с данными</p>
+</dd>
+<dt>pmtstr<span class="classifier">str</span></dt><dd><p>Название столбца, содержащего платежную строку</p>
+</dd>
+<dt>pmtstr_enddt<span class="classifier">str</span></dt><dd><p>Название столбца, содержащего последнюю дату платежной строки</p>
+</dd>
+<dt>retro_dt<span class="classifier">str</span></dt><dd><p>Название столбца, содержащего ретро-даты</p>
+</dd>
+<dt>depth<span class="classifier">int, default 12</span></dt><dd><p>Количество месяцев, отсчитываемых от ретро-даты</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>res<span class="classifier">pandas.Series</span></dt><dd><p>Вектор с выделенными символами покаждому наблюдению</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.get_corr_matrices">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">get_corr_matrices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pearson'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.get_corr_matrices" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.get_predictions">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">get_predictions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fitted_estimator</span></em>, <em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.get_predictions" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.get_worst_status">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">get_worst_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.get_worst_status" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Функция для выбора наихудшего статуса из платежной строки
+можно применять в методе .apply</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.plot_hier_corr">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">plot_hier_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">corr_matrix</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.plot_hier_corr" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Отрисовка дендрограммы иерархической кластеризации признаков
+по матрице корреляций</p>
+<p>TODO: добавить шкалу (или подписи) на тепловую карту</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.positive_coef_drop">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">positive_coef_drop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">gini_data</span></em>, <em class="sig-param"><span class="n">iv_ordered_feats</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">42</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">enable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.positive_coef_drop" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Удаление фичей с положительными коэффициентами</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.select_feats">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_feats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X_train</span></em>, <em class="sig-param"><span class="n">y_train</span></em>, <em class="sig-param"><span class="n">gini_and_iv_stats</span></em>, <em class="sig-param"><span class="n">pearson_corr</span></em>, <em class="sig-param"><span class="n">cramer_corr</span></em>, <em class="sig-param"><span class="n">pearson_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">cramer_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">random_seed</span><span class="o">=</span><span class="default_value">42</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.select_feats" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.select_feats_corr">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_feats_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">corr_matrices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sens_lin</span><span class="o">=</span><span class="default_value">0.7</span></em>, <em class="sig-param"><span class="n">sens_cramer</span><span class="o">=</span><span class="default_value">0.4</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pearson'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.select_feats_corr" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.select_features_corr">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_features_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">corr_matrices</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">pearson_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">cramer_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.select_features_corr" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.select_features_hierarchy">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_features_hierarchy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">thr</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pearson'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.select_features_hierarchy" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Отбор признаков по итогам иерархической кластеризации</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.split_train_test_valid">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">split_train_test_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">test_size</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">val_size</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.split_train_test_valid" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Разбиение выборки на обучающую, валидационную и тестовую c сохранением доли таргета
+kwargs - аргументы для train_test_split из scikit-learn
+Возвращает: X_train, X_val, X_test, y_train, y_val, y_test</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.functions.styler_float">
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">styler_float</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">format_</span><span class="o">=</span><span class="default_value">'{:,.1%}'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.styler_float" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Выводит датафрейм, форматируя числовые значения
+Входные данные:
+—————</p>
+<blockquote>
+<div><dl class="simple">
+<dt>df<span class="classifier">pandas.DataFrame</span></dt><dd><p>Датафрейм для отображения</p>
+</dd>
+</dl>
+<p><a href="#id1"><span class="problematic" id="id2">format_</span></a> : python format string</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics Submodule" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="utils.html" class="btn btn-neutral float-left" title="Utils Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Авторские права 2020, ZenitAI Team
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

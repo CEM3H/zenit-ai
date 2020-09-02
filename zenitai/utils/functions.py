@@ -23,7 +23,7 @@ from ..transform import WoeTransformer
 # Comes from 1. Superscore_Zenit_Features.ipynb, cell
 
 
-def extractSubPmtStr(df, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth: int = 12) -> pd.Series:
+def extract_sub_pmt_str(df, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth: int = 12) -> pd.Series:
     """ Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты
 
     Входные данные:
