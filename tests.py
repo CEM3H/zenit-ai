@@ -127,7 +127,7 @@ def dataframe_equal_test(df1, df2):
     ind_test = all(df1.index == df2.index)
 
     if col_test and ind_test and shape_test:
-        for i in range(7, -1, -1):
+        for i in range(10, -1, -1):
             eq_vals = (df1.round(i) == df2.round(i)).sum().sum()
             if eq_vals == np.multiply(*df1.shape):
                 return "Dataframe's values all equal at {} digits precision".format(i)
@@ -137,7 +137,7 @@ def dataframe_equal_test(df1, df2):
         return "Dataframes are not labelled equally"
 
 
-t1 = generate_train_data(41)
+t1 = generate_train_data(42)
 t2 = generate_train_data()
 
-print(dataframe_equal_test(t1, t2))
+print(dataframe_equal_test(t1, t2.iloc[:-1]))
