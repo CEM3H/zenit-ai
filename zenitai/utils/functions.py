@@ -65,9 +65,14 @@ def extract_sub_pmt_str(df, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth
     return res
 
 
-def get_worst_status(x):
+def get_worst_status(x: str):
     """ Функция для выбора наихудшего статуса из платежной строки
     можно применять в методе .apply
+    Входные данные:
+    ---------------
+        x : str
+            Платежная строка
+    Возвращает
     """
     x = [i for i in x if i != "X"]
     if x:
