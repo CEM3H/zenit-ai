@@ -7,9 +7,28 @@ import pandas as pd
 
 
 def read_from_mssql(path, **kwargs):
+    """загрузка данных из csv-файла, выгруженного из MS SQL SMS"""
     df = pd.read_csv(path, encoding="utf-8", sep=";", dtype="object", **kwargs)
     print(df.shape)
     return df
+
+
+def csv_loader(path, **kwargs):
+    """ Загрузка из csv файла с преобразованием имен столбцов в lowercase"""
+    res = pd.read_csv(path, **kwargs)
+    res.columns = res.columns.astype(str).str.lower().str.strip()
+    print(res.shape)
+
+    return res
+
+
+def excel_loader(path, **kwargs):
+    """ Загрузка из xlsx файла с преобразованием имен столбцов в lowercase"""
+    res = pd.read_excel(path, **kwargs)
+    res.columns = res.columns.astype(str).str.lower().str.strip()
+    print(res.shape)
+
+    return res
 
 
 # Comes from 1. Superscore_Zenit_Features.ipynb, cell

@@ -348,7 +348,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         try:
             # Расчет коэффициентов тренда по числовым значениям предиктора
             if num_mask.sum() > 0:
-                self.trend_coefs.update({col: np.polyfit(x.loc[num_mask].astype(float), y.loc[num_mask], deg=1)})
+                try:
+                    poly_coefs = np.polyfit(x.loc[num_mask].astype(float), y.loc[num_mask], deg=1)
+                except np.linalg.LinAlgError as e:
+                    print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
+                    print("Linear Least Squares coefficients were set to [1, 0]")
+                    poly_coefs = np.array([1, 0])
+
+                self.trend_coefs.update({col: poly_coefs})
                 # Расчет монотонных границ
                 gr_subset_num = gr_subset[gr_subset["value"].isin(num_vals)].copy()
                 gr_subset_num["value"] = pd.to_numeric(gr_subset_num["value"])
@@ -357,8 +364,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 # Применение границ к сгруппированным данным
                 gr_subset_num["groups"] = pd.cut(gr_subset_num["value"], borders)
                 gr_subset_num["type"] = "num"
-        except np.linalg.LinAlgError as e:
-            print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
+
         except ValueError as e:
             print(f"ValueError on predictor {col}.\nError MSG: {e}")
 
