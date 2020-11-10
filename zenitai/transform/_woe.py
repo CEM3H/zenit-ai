@@ -120,6 +120,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Функции интерфейса класса
     # -------------------------
 
+    def _validate_data(self, X, y=None):
+        if not hasattr(y, "name"):
+            y = pd.Series(y, name="target")
+        if not hasattr(X, "columns"):
+            X = pd.DataFrame(X)
+            X.columns = ["X" + str(i + 1) for i in range(X.shape[1])]
+
+        return X, y
+
     def fit(self, X, y, cat_values={}, alpha_values={}):
         """
         Обучение трансформера и расчет всех промежуточных данных
@@ -138,8 +147,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
-        # Сохранение категориальных знаений
+        # Сохранение категориальных значений
         self.cat_values = cat_values
+        # Валидация данных и решейпинг
+        X, y = self._validate_data(X, y)
         # Инициализация коэффициентов для регуляризации групп
         self.alpha_values = {i: 0 for i in X.columns}
         self.alpha_values.update(alpha_values)
@@ -154,7 +165,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Применение обученного трансформера к новым данным
 
@@ -170,8 +181,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        if isinstance(X, pd.Series):
-            X = pd.DataFrame(X)
+        X, y = self._validate_data(X, y)
         for i in X:
             if i in self.predictors:
                 try:
@@ -252,6 +262,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # -------------------------
     # Внутренние функции над всем датасетом
     # -------------------------
+
+    def _validate_data(self, X, y):
+        if not hasattr(X, "columns"):
+            X = pd.DataFrame(X)
+            X.columns = ["X" + str(i + 1) for i in range(X.shape[1])]
+
+        return X, y
+
     def _grouping(self, X, y):
         """
         Применение группировки ко всем предикторам
