@@ -259,7 +259,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # -------------------------
 
     def _validate_and_convert_data(self, X, y=None):
-        """ Проверяет, является ли
+        """ Проверяеn входные данные, трансформирует в объекты pandas
         """
         X, y = self._validate_data(X, y, force_all_finite=False)
         if (not hasattr(y, "name")) and (y is not None):
