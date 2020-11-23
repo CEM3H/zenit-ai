@@ -120,15 +120,6 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Функции интерфейса класса
     # -------------------------
 
-    def _validate_data(self, X, y=None):
-        if not hasattr(y, "name"):
-            y = pd.Series(y, name="target")
-        if not hasattr(X, "columns"):
-            X = pd.DataFrame(X)
-            X.columns = ["X" + str(i + 1) for i in range(X.shape[1])]
-
-        return X, y
-
     def fit(self, X, y, cat_values={}, alpha_values={}):
         """
         Обучение трансформера и расчет всех промежуточных данных
@@ -263,7 +254,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Внутренние функции над всем датасетом
     # -------------------------
 
-    def _validate_data(self, X, y):
+    def _validate_data(self, X, y=None):
+        if not hasattr(y, "name"):
+            y = pd.Series(y, name="target")
         if not hasattr(X, "columns"):
             X = pd.DataFrame(X)
             X.columns = ["X" + str(i + 1) for i in range(X.shape[1])]
