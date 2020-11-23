@@ -258,15 +258,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Внутренние функции над всем датасетом
     # -------------------------
 
-    def _validate_and_convert_data(self, X, y=None):
+    def _validate_and_convert_data(self, X, y):
         """ Проверяеn входные данные, трансформирует в объекты pandas
         """
-        X, y = self._validate_data(X, y, force_all_finite=False)
-        if (not hasattr(y, "name")) and (y is not None):
-            y = pd.Series(y, name="target")
-        if not hasattr(X, "columns"):
-            X = pd.DataFrame(X)
-            X.columns = ["X" + str(i + 1) for i in range(X.shape[1])]
+
+        if hasattr(X, "columns"):
+            predictors = X.columns
+        else:
+            predictors = ["X" + str(i + 1) for i in range(X.shape[1])]
+
+        X, y = self._validate_data(X, y, dtype=None, force_all_finite=False)
+        y = pd.Series(y, name="target")
+        X = pd.DataFrame(X, columns=predictors)
 
         return X, y
 
