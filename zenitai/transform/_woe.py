@@ -100,7 +100,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             len(self.predictors),
         )
 
-    def __init__(self, min_sample_rate=0.05, min_count=3):
+    def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False):
         """
         Инициализация экземпляра класса
 
@@ -115,6 +115,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.min_count = min_count
         self.predictors = []
         self.alpha_values = {}
+        self.save_data = save_data
 
     # -------------------------
     # Функции интерфейса класса
@@ -141,7 +142,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Сохранение категориальных значений
         self.cat_values = cat_values
         # Валидация данных и решейпинг
-        X, y = self._validate_data(X, y)
+        X, y = self._validate_and_convert_data(X, y)
+        if self.save_data:
+            self.data = X
+            self.target = y
         # Инициализация коэффициентов для регуляризации групп
         self.alpha_values = {i: 0 for i in X.columns}
         self.alpha_values.update(alpha_values)
@@ -172,7 +176,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        X, y = self._validate_data(X, y)
+        X, y = self._validate_and_convert_data(X, y)
         for i in X:
             if i in self.predictors:
                 try:
@@ -254,8 +258,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # Внутренние функции над всем датасетом
     # -------------------------
 
-    def _validate_data(self, X, y=None):
-        if not hasattr(y, "name"):
+    def _validate_and_convert_data(self, X, y=None):
+        """ Проверяет, является ли
+        """
+        X, y = self._validate_data(X, y, force_all_finite=False)
+        if (not hasattr(y, "name")) and (y is not None):
             y = pd.Series(y, name="target")
         if not hasattr(X, "columns"):
             X = pd.DataFrame(X)
@@ -316,8 +323,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         Входные данные:
         ---------------
             X : pandas.DataFrame
-                    Таблица данных для агрегации, должна содержать поля 'predictor' и 'target'.
-                    Поле target при этом должно состоять из 0 и 1, где 1 - целевое событие
+                    Таблица данных для агрегации
             y : pandas.Series
                     Целевая переменная
 
