@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Transform Module &mdash; документация ZenitAI 0.3</title>
+  <title>Transform Module &mdash; документация ZenitAI 0.4</title>
   
 
   
@@ -156,12 +156,11 @@
 <span id="transform-module"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module<a class="headerlink" href="#module-zenitai.transform" title="Ссылка на этот заголовок">¶</a></h1>
 <dl class="py class">
 <dt id="zenitai.transform.WoeTransformer">
-<em class="property">class </em><code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">WoeTransformer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer" title="Ссылка на это определение">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">WoeTransformer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">save_data</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer" title="Ссылка на это определение">¶</a></dt>
 <dd><blockquote>
 <div><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
 </div></blockquote>
 <p>Класс для построения и применения WOE группировки к датасету</p>
-<p><strong>Параметры</strong></p>
 <blockquote>
 <div><dl class="simple">
 <dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
@@ -170,20 +169,6 @@
 </dd>
 </dl>
 </div></blockquote>
-<p><strong>Методы</strong>:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>fit</dt><dd><p>Обучение трансформера, сохранение всех нужных данных</p>
-</dd>
-<dt>fit_transform</dt><dd><p>Обучение трансформера и применение группировки к данным</p>
-</dd>
-<dt>transform</dt><dd><p>Применение обученного трансформера к новым данным</p>
-</dd>
-<dt>plot_woe</dt><dd><p>Отрисовка графиков с результатами группировки</p>
-</dd>
-</dl>
-</div></blockquote>
-<p><strong>Атрибуты</strong></p>
 <blockquote>
 <div><dl class="simple">
 <dt>predictors<span class="classifier">list</span></dt><dd><p>Список предикторов, на которых была построена группировка</p>
@@ -253,6 +238,12 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.get_iv">
+<code class="sig-name descname">get_iv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sort</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.get_iv" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Получение списка значений IV по предикторам</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="zenitai.transform.WoeTransformer.plot_woe">
 <code class="sig-name descname">plot_woe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">predictors</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.plot_woe" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Отрисовка одного или нескольких графиков группировки</p>
@@ -269,7 +260,7 @@
 
 <dl class="py method">
 <dt id="zenitai.transform.WoeTransformer.transform">
-<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.transform" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.transform" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Применение обученного трансформера к новым данным</p>
 <blockquote>
 <div><dl class="simple">
