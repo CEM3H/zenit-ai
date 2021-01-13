@@ -3,28 +3,26 @@
 """
 
 
-import pandas as pd
-import numpy as np
-import scipy.stats as sts
-
-from matplotlib import pyplot as plt
-
 from collections import defaultdict
+
+import numpy as np
+import pandas as pd
+import scipy.stats as sts
+from typing import List, Dict, Any, Union, Optional
+from IPython.display import display
+from matplotlib import pyplot as plt
 from scipy.cluster import hierarchy
-from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 from tqdm import tqdm
-from IPython.display import display
 
 from ..transform import WoeTransformer
 
-# Comes from 1. Superscore_Zenit_Features.ipynb, cell
 
-
-def extract_sub_pmt_str(df, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth: int = 12) -> pd.Series:
-    """ Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты
+def extract_sub_pmt_str(df: pd.DataFrame, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth: int = 12) -> pd.Series:
+    """Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты
 
     Входные данные:
     ---------------
@@ -66,7 +64,7 @@ def extract_sub_pmt_str(df, pmtstr: str, pmtstr_enddt: str, retro_dt: str, depth
 
 
 def get_worst_status(x):
-    """ Функция для выбора наихудшего статуса из платежной строки
+    """Функция для выбора наихудшего статуса из платежной строки
     можно применять в методе .apply
     """
     x = [i for i in x if i != "X"]
@@ -77,8 +75,7 @@ def get_worst_status(x):
 
 
 def check_feat_stats(df, feat, val_counts=False):
-    """ Расчет описательных статистик признака
-    """
+    """Расчет описательных статистик признака"""
     print("Кол-во наблюдений:", len(df))
     print("Кoл-во пустых значений:", df[feat].isna().sum())
 
@@ -95,11 +92,14 @@ def check_feat_stats(df, feat, val_counts=False):
         val_count = df[feat].value_counts()
         display(val_count.reset_index())
 
-    return pd.DataFrame.from_dict(d, orient="index",)
+    return pd.DataFrame.from_dict(
+        d,
+        orient="index",
+    )
 
 
 def styler_float(df, format_="{:,.1%}"):
-    """ Выводит датафрейм, форматируя числовые значения
+    """Выводит датафрейм, форматируя числовые значения
     Входные данные:
     ---------------
         df : pandas.DataFrame
@@ -110,7 +110,14 @@ def styler_float(df, format_="{:,.1%}"):
         display(df)
 
 
-def split_train_test_valid(df, target: str, test_size=0.3, val_size=0.3, verbose=False, **kwargs):
+def split_train_test_valid(
+    df: pd.DataFrame,
+    target: str,
+    test_size: float = 0.3,
+    val_size: float = 0.3,
+    verbose: bool = False,
+    **kwargs: Dict[Any, Optional[Any]],
+) -> List[Any]:
     """
     Разбиение выборки на обучающую, валидационную и тестовую c сохранением доли таргета
     kwargs - аргументы для train_test_split из scikit-learn
@@ -119,8 +126,8 @@ def split_train_test_valid(df, target: str, test_size=0.3, val_size=0.3, verbose
     #     kwargs.update({'stratify': df[target]})
     if kwargs.get("shuffle", True) is True:
         kwargs.update({"stratify": df[target]})
-    else:
-        kwargs.update({"stratify": None})
+    # else:
+    #     kwargs.update({"stratify": None})
 
     # Выделение тестовой выборки
     y_data = df[target]
@@ -264,13 +271,15 @@ def build_logistic_regression(
         return grid_search
 
 
-def select_features_corr(df, corr_matrices: tuple, pearson_sens=0.8, cramer_sens=0.8, verbose=False):
+def select_features_corr(
+    df: pd.Dataframe, corr_matrices: tuple, pearson_sens: float = 0.8, cramer_sens: float = 0.8, verbose: bool = False
+) -> pd.DataFrame:
     cols = df["predictor"]
     if verbose:
         print("Got {} predictors".format(len(cols)))
     pearson_df, cramer_df = corr_matrices
 
-    X3 = []
+    X3: list = []
 
     DF_predictors = pd.DataFrame({"predictor": cols})  # причина отсева предиктора
     L_reason = ["added"]

@@ -3,37 +3,38 @@ Hello World!
 """
 
 from . import functions
-from .functions import get_corr_matrices
-from .functions import select_feats
-from .functions import cramers_corr
-from .functions import positive_coef_drop
-from .functions import get_predictions
-from .functions import build_logistic_regression
-from .functions import select_features_corr
-from .functions import styler_float
-from .functions import select_features_hierarchy
-from .functions import check_feat_stats
-from .functions import extract_sub_pmt_str
-from .functions import select_feats_corr
-from .functions import split_train_test_valid
-from .functions import get_worst_status
-from .functions import plot_hier_corr
-
-from .metrics import calc_PSI
-from .metrics import auc_to_gini
-from .metrics import plot_roc
-from .metrics import get_roc_curves
-from .metrics import get_gini_and_auc
-from .metrics import calc_gini_lr
-
-from .utils import read_from_mssql
-from .utils import compare_series
-from .utils import generate_train_data
-from .utils import generate_test_data
-
-from .tests import compare_results_test
-from .tests import compare_time_test
-
+from .functions import (
+    build_logistic_regression,
+    check_feat_stats,
+    cramers_corr,
+    extract_sub_pmt_str,
+    get_corr_matrices,
+    get_predictions,
+    get_worst_status,
+    plot_hier_corr,
+    positive_coef_drop,
+    select_feats,
+    select_feats_corr,
+    select_features_corr,
+    select_features_hierarchy,
+    split_train_test_valid,
+    styler_float,
+)
+from .metrics import (
+    auc_to_gini,
+    calc_gini_lr,
+    calc_PSI,
+    get_gini_and_auc,
+    get_roc_curves,
+    plot_roc,
+)
+from .tests import compare_results_test, compare_time_test
+from .utils import (
+    compare_series,
+    generate_test_data,
+    generate_train_data,
+    read_from_mssql,
+)
 
 __all__ = [
     "get_corr_matrices",

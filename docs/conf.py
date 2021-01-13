@@ -13,8 +13,9 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("."))
 from pkg_resources import get_distribution
+
+sys.path.insert(0, os.path.abspath("."))
 
 __version__ = get_distribution("ZenitAI").version
 
