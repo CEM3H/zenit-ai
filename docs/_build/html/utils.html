@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Utils Module &mdash; документация ZenitAI 0.3</title>
+  <title>Utils Module &mdash; документация ZenitAI 0.4</title>
   
 
   
@@ -323,7 +323,7 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.generate_train_data">
-<code class="sig-prename descclassname">zenitai.utils.</code><code class="sig-name descname">generate_train_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.generate_train_data" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.</code><code class="sig-name descname">generate_train_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">42</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.generate_train_data" title="Ссылка на это определение">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -372,9 +372,18 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.get_worst_status">
-<code class="sig-prename descclassname">zenitai.utils.</code><code class="sig-name descname">get_worst_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.get_worst_status" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.</code><code class="sig-name descname">get_worst_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.get_worst_status" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Функция для выбора наихудшего статуса из платежной строки
-можно применять в методе .apply</p>
+можно применять в методе .apply
+Входные данные:
+—————</p>
+<blockquote>
+<div><dl class="simple">
+<dt>x<span class="classifier">str</span></dt><dd><p>Платежная строка</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Возвращает</p>
 </dd></dl>
 
 <dl class="py function">
@@ -416,7 +425,8 @@ x2 - переменная 2</p>
 <dl class="py function">
 <dt id="zenitai.utils.read_from_mssql">
 <code class="sig-prename descclassname">zenitai.utils.</code><code class="sig-name descname">read_from_mssql</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.read_from_mssql" title="Ссылка на это определение">¶</a></dt>
-<dd></dd></dl>
+<dd><p>загрузка данных из csv-файла, выгруженного из MS SQL SMS</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="zenitai.utils.select_feats">

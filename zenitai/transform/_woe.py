@@ -50,7 +50,8 @@ class _GroupedPredictor(pd.DataFrame):
 class WoeTransformer(TransformerMixin, BaseEstimator):
     """Класс для построения и применения WOE группировки к датасету
 
-    **Параметры**
+    Параметры
+    --------------
 
         min_sample_rate : float, default 0.05
                 Минимальный размер группы (доля от размера выборки)
@@ -58,21 +59,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         min_count : int, default 3
                 Минимальное количество наблюдений каждого класса в группе
 
-    **Методы**:
-
-        fit
-                Обучение трансформера, сохранение всех нужных данных
-
-        fit_transform
-                Обучение трансформера и применение группировки к данным
-
-        transform
-                Применение обученного трансформера к новым данным
-
-        plot_woe
-                Отрисовка графиков с результатами группировки
-
-    **Атрибуты**
+    Атрибуты
+    -------------
 
         predictors : list
                 Список предикторов, на которых была построена группировка
@@ -111,7 +99,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             len(self.predictors),
         )
 
-    def __init__(self, min_sample_rate=0.05, min_count=3):
+    def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False):
         """
         Инициализация экземпляра класса
 
@@ -126,6 +114,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.min_count = min_count
         self.predictors = []
         self.alpha_values = {}
+        self.save_data = save_data
 
     # -------------------------
     # Функции интерфейса класса
@@ -149,8 +138,13 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
-        # Сохранение категориальных знаений
+        # Сохранение категориальных значений
         self.cat_values = cat_values
+        # Валидация данных и решейпинг
+        X, y = self._validate_and_convert_data(X, y)
+        if self.save_data:
+            self.data = X
+            self.target = y
         # Инициализация коэффициентов для регуляризации групп
         self.alpha_values = {i: 0 for i in X.columns}
         self.alpha_values.update(alpha_values)
@@ -165,7 +159,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Применение обученного трансформера к новым данным
 
@@ -181,8 +175,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        if isinstance(X, pd.Series):
-            X = pd.DataFrame(X)
+        X, y = self._validate_and_convert_data(X, y)
         for i in X:
             if i in self.predictors:
                 try:
@@ -246,9 +239,37 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         # return fig
 
+    def get_iv(self, sort=False):
+        """Получение списка значений IV по предикторам"""
+        try:
+            res = self.stats.groupby("predictor")["IV"].sum()
+            if sort:
+                res = res.sort_values(ascending=False)
+            res = dict(res)
+        except AttributeError as e:
+            print(f"Transformer was not fitted yet. {e}")
+            res = {}
+
+        return res
+
     # -------------------------
     # Внутренние функции над всем датасетом
     # -------------------------
+
+    def _validate_and_convert_data(self, X, y):
+        """Проверяеn входные данные, трансформирует в объекты pandas"""
+
+        if hasattr(X, "columns"):
+            predictors = X.columns
+        else:
+            predictors = ["X" + str(i + 1) for i in range(X.shape[1])]
+
+        X, y = self._validate_data(X, y, dtype=None, force_all_finite=False)
+        y = pd.Series(y, name="target")
+        X = pd.DataFrame(X, columns=predictors)
+
+        return X, y
+
     def _grouping(self, X, y):
         """
         Применение группировки ко всем предикторам
@@ -301,8 +322,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         Входные данные:
         ---------------
             X : pandas.DataFrame
-                    Таблица данных для агрегации, должна содержать поля 'predictor' и 'target'.
-                    Поле target при этом должно состоять из 0 и 1, где 1 - целевое событие
+                    Таблица данных для агрегации
             y : pandas.Series
                     Целевая переменная
 
@@ -344,7 +364,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         try:
             # Расчет коэффициентов тренда по числовым значениям предиктора
             if num_mask.sum() > 0:
-                self.trend_coefs.update({col: np.polyfit(x.loc[num_mask].astype(float), y.loc[num_mask], deg=1)})
+                try:
+                    poly_coefs = np.polyfit(x.loc[num_mask].astype(float), y.loc[num_mask], deg=1)
+                except np.linalg.LinAlgError as e:
+                    print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
+                    print("Linear Least Squares coefficients were set to [1, 0]")
+                    poly_coefs = np.array([1, 0])
+
+                self.trend_coefs.update({col: poly_coefs})
                 # Расчет монотонных границ
                 gr_subset_num = gr_subset[gr_subset["value"].isin(num_vals)].copy()
                 gr_subset_num["value"] = pd.to_numeric(gr_subset_num["value"])
@@ -353,8 +380,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 # Применение границ к сгруппированным данным
                 gr_subset_num["groups"] = pd.cut(gr_subset_num["value"], borders)
                 gr_subset_num["type"] = "num"
-        except np.linalg.LinAlgError as e:
-            print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
+
+        except ValueError as e:
+            print(f"ValueError on predictor {col}.\nError MSG: {e}")
 
         # Расчет коэффициентов тренда по категориальным значениям предиктора
         if (~num_mask).sum() > 0:
@@ -439,7 +467,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return X_woe
 
-    def _monotonic_borders(self, DF_grouping, p):
+    def _monotonic_borders(self, grouped, p):
         """
         Определение оптимальных границ групп предиктора (монотонный тренд)
 
@@ -462,6 +490,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         k01, k11 = (1, 1) if p[0] > 0 else (0, -1)
         R_borders = []
         min_ind = 0  # минимальный индекс. Начальные условия
+
+        DF_grouping = grouped.copy().sort_values("value")
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
             # Расчет показателей накопительным итогом
@@ -704,10 +734,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.stats = _GroupedPredictor()
 
     def _get_nums_mask(self, x):
-        if x.apply(lambda x: isinstance(x, str)).sum() == len(x):
-            return pd.Series(False, index=x.index)
-        else:
-            mask = pd.to_numeric(x, errors="coerce").notna()
+        # if x.apply(lambda x: isinstance(x, str)).sum() == len(x):
+        #     return pd.Series(False, index=x.index)
+        # else:
+        #     mask = pd.to_numeric(x, errors="coerce").notna()
+        mask = pd.to_numeric(x, errors="coerce").notna()
+
         return mask
 
 

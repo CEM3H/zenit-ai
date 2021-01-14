@@ -63,13 +63,19 @@ def extract_sub_pmt_str(df: pd.DataFrame, pmtstr: str, pmtstr_enddt: str, retro_
     return res
 
 
-def get_worst_status(x):
+def get_worst_status(x: str) -> float:
     """Функция для выбора наихудшего статуса из платежной строки
     можно применять в методе .apply
+    Входные данные:
+    ---------------
+        x : str
+            Платежная строка
+    Возвращает
     """
-    x = [i for i in x if i != "X"]
-    if x:
-        return np.float(sorted(list(map(lambda x: "1.5" if x == "A" else x, x)))[-1])
+    new_x = list(x)
+    new_x = [i for i in x if i != "X"]
+    if new_x:
+        return np.float(sorted(list(map(lambda x: "1.5" if x == "A" else new_x, new_x)))[-1])
     else:
         return np.float(-1)
 

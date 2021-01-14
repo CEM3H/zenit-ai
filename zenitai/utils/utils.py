@@ -7,9 +7,28 @@ import pandas as pd
 
 
 def read_from_mssql(path, **kwargs):
+    """загрузка данных из csv-файла, выгруженного из MS SQL SMS"""
     df = pd.read_csv(path, encoding="utf-8", sep=";", dtype="object", **kwargs)
     print(df.shape)
     return df
+
+
+def csv_loader(path, **kwargs):
+    """ Загрузка из csv файла с преобразованием имен столбцов в lowercase"""
+    res = pd.read_csv(path, **kwargs)
+    res.columns = res.columns.astype(str).str.lower().str.strip()
+    print(res.shape)
+
+    return res
+
+
+def excel_loader(path, **kwargs):
+    """ Загрузка из xlsx файла с преобразованием имен столбцов в lowercase"""
+    res = pd.read_excel(path, **kwargs)
+    res.columns = res.columns.astype(str).str.lower().str.strip()
+    print(res.shape)
+
+    return res
 
 
 # Comes from 1. Superscore_Zenit_Features.ipynb, cell
@@ -37,12 +56,19 @@ def compare_series(s1, s2, ret_index=False):
     return s1_common_elems, s2_common_elems, s1_only, s2_only
 
 
-def generate_train_data():
+def generate_train_data(seed=42):
+    np.random.seed(seed)
+    a = np.random.rand(2500) * 100
 
     res = pd.DataFrame(
         {
             "digits": np.random.choice(range(10), 10000),
             "integers": np.random.choice(range(100), 10000),
+            "many_unique_floats": np.hstack((a, a, a, a)),
+            "all_unique_floats": np.random.rand(10000) * 100,
+            "many_floats_w_cat": np.hstack((np.random.rand(5000) * 100, np.array(["d", "f"] * 2500))),
+            "many_floats_w_cat_and_nan": np.hstack((np.random.rand(7000) * 100, np.array(["d", "f", np.nan] * 1000))),
+            "many_floats_w_outliers": np.hstack((np.random.rand(5000) * 100, np.array([-10000, 10000] * 2500))),
             "floats": np.random.choice(np.linspace(1, 10, 100), 10000),
             "large_floats": np.random.choice(np.linspace(1, 10 ** 6, 10 * 3), 10000),
             "integers_w_neg": np.random.choice(range(-50, 51), 10000),

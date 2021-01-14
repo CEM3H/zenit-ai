@@ -9,6 +9,17 @@ Welcome to ZenitAI's documentation!
 ZenitAI Package
 ===============
 
+:mod:`zenitai.transform`.WoeTransformer
+---------------------------------------
+
+.. currentmodule:: zenitai.transform
+
+.. autoclass:: WoeTransformer
+
+
+   .. automethod:: __init__
+
+
 :mod:`Transform` Module
 -----------------------
 
@@ -29,6 +40,7 @@ ZenitAI Package
    :maxdepth: 2
    :caption: Contents:
 
+   WoeTransformer
    transform
    utils
 
