@@ -1,3 +1,5 @@
+pyproject.toml
+setup.cfg
 setup.py
 ZenitAI.egg-info/PKG-INFO
 ZenitAI.egg-info/SOURCES.txt
@@ -9,7 +11,6 @@ zenitai.egg-info/SOURCES.txt
 zenitai.egg-info/dependency_links.txt
 zenitai.egg-info/top_level.txt
 zenitai/transform/__init__.py
-zenitai/transform/_alpha_func.py
 zenitai/transform/_woe.py
 zenitai/utils/__init__.py
 zenitai/utils/functions.py

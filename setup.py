@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="ZenitAI",
-    version="0.4",
+    version="0.4.1",
     packages=find_packages(),
     descrption="""
     A collection of tools and utils for data analysis.

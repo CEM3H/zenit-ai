@@ -21,4 +21,4 @@ help:
 
 
 build:
-	python setup.py sdist
+	python -m setup sdist
