@@ -26,7 +26,7 @@ def extract_sub_pmt_str(df: pd.DataFrame, pmtstr: str, pmtstr_enddt: str, retro_
 
     Входные данные:
     ---------------
-        df : pandas.Dataframe
+        df : pandas.DataFrame
                 Таблица с данными
         pmtstr : str
                 Название столбца, содержащего платежную строку
@@ -278,7 +278,7 @@ def build_logistic_regression(
 
 
 def select_features_corr(
-    df: pd.Dataframe, corr_matrices: tuple, pearson_sens: float = 0.8, cramer_sens: float = 0.8, verbose: bool = False
+    df: pd.DataFrame, corr_matrices: tuple, pearson_sens: float = 0.8, cramer_sens: float = 0.8, verbose: bool = False
 ) -> pd.DataFrame:
     cols = df["predictor"]
     if verbose:
