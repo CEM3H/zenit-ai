@@ -257,18 +257,24 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
     # -------------------------
 
     def _validate_and_convert_data(self, X, y):
-        """Проверяеn входные данные, трансформирует в объекты pandas"""
+        """Проверяеn входные данные, трансформирует в объекты pandas
+        Использует метод _validate_data из sklearn/base.py
+        """
 
         if hasattr(X, "columns"):
             predictors = X.columns
         else:
             predictors = ["X" + str(i + 1) for i in range(X.shape[1])]
+        if y is None:
+            X_valid = self._validate_data(X, y, dtype=None, force_all_finite=False)
+            X_valid = pd.DataFrame(X, columns=predictors)
+            y_valid = None
+        else:
+            X_valid, y_valid = self._validate_data(X, y, dtype=None, force_all_finite=False)
+            y_valid = pd.Series(y, name="target")
+            X_valid = pd.DataFrame(X, columns=predictors)
 
-        X, y = self._validate_data(X, y, dtype=None, force_all_finite=False)
-        y = pd.Series(y, name="target")
-        X = pd.DataFrame(X, columns=predictors)
-
-        return X, y
+        return X_valid, y_valid
 
     def _grouping(self, X, y):
         """
