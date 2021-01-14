@@ -13,7 +13,7 @@ from IPython.display import display
 from matplotlib import pyplot as plt
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 class _GroupedPredictor(pd.DataFrame):

@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def calc_PSI(exp, act):
