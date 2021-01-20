@@ -99,7 +99,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             len(self.predictors),
         )
 
-    def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False):
+    def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False, join_bad_categories=False):
         """
         Инициализация экземпляра класса
 
@@ -115,6 +115,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.predictors = []
         self.alpha_values = {}
         self.save_data = save_data
+        self.join_bad = join_bad_categories
 
     # -------------------------
     # Функции интерфейса класса
@@ -287,6 +288,13 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Группировка и расчет показателей
         for col in df.columns[:-1]:
             grouped_temp = self._group_single(df[col], y)
+            num_mask = self._get_nums_mask(grouped_temp["value"])
+            cat_val_mask = grouped_temp["value"].isin(self.cat_values.get(col, []))
+            is_all_categorical = all(~num_mask | cat_val_mask)
+
+            if self.join_bad and is_all_categorical:
+                repl = self._get_cat_values_for_join(grouped_temp)
+                grouped_temp = self._group_single(df[col].replace(repl), y)
             self.grouped = self.grouped.append(grouped_temp)
 
         # Замена пустых значений обратно на np.nan ИЛИ преобразование в числовой тип
@@ -335,6 +343,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         col = x.name
         df = pd.DataFrame({col: x.values, "target": y.values})
+
         grouped_temp = df.groupby(col)["target"].agg(["count", "sum"]).reset_index()
         grouped_temp.columns = ["value", "sample_count", "target_count"]
         grouped_temp["sample_rate"] = grouped_temp["sample_count"] / grouped_temp["sample_count"].sum()
@@ -507,11 +516,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             DF_iter["target_rate"] = DF_iter["target_count"] / DF_iter["sample_count"]
 
             # Проверка на соответствие критериям групп
-            DF_iter["check"] = (
-                (DF_iter["sample_rate"] >= self.min_sample_rate - 10 ** -9)
-                & (DF_iter["target_count"] >= self.min_count)
-                & (DF_iter["non_target_count"] >= self.min_count)
-            )
+            DF_iter["check"] = self._check_groups(DF_iter)
 
             # Расчет базы для проверки оптимальности границы
             # В зависимости от тренда считается скользящий _вперед_ минимум или максимум
@@ -553,6 +558,63 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             warnings.warn(f"Couldn't find any borders for feature {predictor}.\n Borders set on (-inf, +inf)")
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
+
+    def _check_groups(
+        self, df, sample_rate_col="sample_rate", sample_count_col="sample_count", target_count_col="target_count"
+    ):
+        """ Проверить сгруппированные значения предиктора на соответствме условиям"""
+        cond_mask = (
+            (df[sample_rate_col] >= self.min_sample_rate - 10 ** -9)
+            & (df[sample_count_col] >= self.min_count)
+            & (df[target_count_col] >= self.min_count)
+        )
+
+        return cond_mask
+
+    def _get_cat_values_for_join(self, grouped):
+        """Получить словарь для замены категорий на объединяемые
+        NOTE: Нужно тестирование
+        TODO: переписать на рекурсию
+        """
+        df = grouped.copy()
+
+        cond_mask = ~self._check_groups(df)
+
+        res = df[["predictor", "value", "sample_count", "target_count", "sample_rate", "target_rate"]].copy()
+        res = res.sort_values(["sample_rate", "target_rate"])
+        res["cum_sample_rate"] = res["sample_rate"].cumsum()
+        res["check"] = cond_mask
+        res["check_reverse"] = ~cond_mask
+        res["check_diff"] = res["check"].astype(int).diff()
+        res["new_group"] = (res["check_diff"] == -1).astype(int)
+        res["exist_group"] = res["check_reverse"].astype(int).eq(1)
+        res.loc[~res["check_reverse"], "exist_group"] = np.NaN
+        res["exist_group_cum"] = res["exist_group"].cumsum().fillna(method="bfill")
+
+        res[["cum_sr", "cum_sc", "cum_tc"]] = res.groupby("exist_group_cum").agg(
+            {
+                "sample_rate": "cumsum",
+                "sample_count": "cumsum",
+                "target_count": "cumsum",
+            }
+        )
+
+        res["cum_sr_check"] = (
+            self._check_groups(res, "cum_sr", "cum_sc", "cum_tc").astype(int).diff().eq(1).astype(int).shift()
+        )
+
+        display(res)
+        res.loc[res["cum_sr_check"] != 1, "cum_sr_check"] = np.nan
+        res["cum_sr_check"] = res["cum_sr_check"].fillna(method="ffill").fillna(0)
+        res["group_number"] = res["exist_group_cum"] + res["cum_sr_check"]
+
+        repl = res.groupby("group_number").agg({"value": list}).to_dict()["value"]
+        repl = {k: "_".join(v) for k, v in repl.items()}
+        res["group_vals"] = res["group_number"].replace(repl)
+
+        t = dict(zip(res["value"], res["group_vals"]))
+
+        return t
 
     def _plot_single_woe_grouping(self, stats, ax_pd=None):
         """
