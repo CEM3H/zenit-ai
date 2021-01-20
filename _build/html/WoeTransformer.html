@@ -155,7 +155,77 @@
            <div itemprop="articleBody">
 
   <div class="section" id="zenitai-transform-woetransformer">
-<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">zenitai.transform</span></code>.WoeTransformer<a class="headerlink" href="#zenitai-transform-woetransformer" title="Ссылка на этот заголовок">¶</a></h1>
+<h1><a class="reference internal" href="transform.html#module-zenitai.transform" title="zenitai.transform"><code class="xref py py-mod docutils literal notranslate"><span class="pre">zenitai.transform</span></code></a>.WoeTransformer<a class="headerlink" href="#zenitai-transform-woetransformer" title="Ссылка на этот заголовок">¶</a></h1>
+<dl class="py class">
+<dt id="zenitai.transform.WoeTransformer">
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.transform.</code><code class="sig-name descname">WoeTransformer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">save_data</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Класс для построения и применения WOE группировки к датасету</p>
+<blockquote>
+<div><dl class="simple">
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="simple">
+<dt>predictors<span class="classifier">list</span></dt><dd><p>Список предикторов, на которых была построена группировка</p>
+</dd>
+<dt>stats<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты WOE-группировки по всем предикторам</p>
+</dd>
+<dt>grouped<span class="classifier">pandas.DataFrame</span></dt><dd><p>Результаты агрегации предикторов</p>
+</dd>
+<dt>cat_values<span class="classifier">dict of lists</span></dt><dd><p>Словарь со списками категорий по предикторам, переданный при обучении</p>
+</dd>
+<dt>alpha_values<span class="classifier">dict of floats</span></dt><dd><p>Словарь со значениями alpha для регуляризации групп</p>
+</dd>
+<dt>trend_coefs<span class="classifier">dict of np.arrays</span></dt><dd><p>Коэффициенты тренда по количественным предикторам</p>
+</dd>
+<dt>borders<span class="classifier">dict of lists</span></dt><dd><p>Монотонные границы по количественным предикторам</p>
+</dd>
+<dt>possible groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о значениях предиктора, которые могли бы стать
+отдельными категориями</p>
+</dd>
+<dt>bad_groups<span class="classifier">pd.DataFrame</span></dt><dd><p>Данные о группах, которые не удовлетворяют условиям</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_sample_rate</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">min_count</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">save_data</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.__init__" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Инициализация экземпляра класса</p>
+<blockquote>
+<div><dl class="simple">
+<dt>min_sample_rate<span class="classifier">float, default 0.05</span></dt><dd><p>Минимальный размер группы (доля от размера выборки)</p>
+</dd>
+<dt>min_count<span class="classifier">int, default 3</span></dt><dd><p>Минимальное количество наблюдений каждого класса в группе</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.transform.WoeTransformer.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">cat_values</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">alpha_values</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.transform.WoeTransformer.fit" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Обучение трансформера и расчет всех промежуточных данных</p>
+<blockquote>
+<div><dl class="simple">
+<dt>X<span class="classifier">pd.DataFrame</span></dt><dd><p>Датафрейм с предикторами, которые нужно сгруппировать</p>
+</dd>
+<dt>y<span class="classifier">pd.Series</span></dt><dd><p>Целевая переменная</p>
+</dd>
+<dt>cat_values<span class="classifier">dict, optional</span></dt><dd><p>Словарь списков с особыми значениями, которые нужно
+выделить в категории
+По умолчанию все строковые и пропущенные значения
+выделяются в отдельные категории</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
 <div class="clearer"></div></div>
 
 

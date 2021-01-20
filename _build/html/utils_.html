@@ -163,8 +163,67 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
 
-  <div class="section" id="utils-submodule">
-<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Submodule<a class="headerlink" href="#utils-submodule" title="Ссылка на этот заголовок">¶</a></h1>
+  <div class="section" id="module-zenitai.utils.utils">
+<span id="utils-submodule"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Submodule<a class="headerlink" href="#module-zenitai.utils.utils" title="Ссылка на этот заголовок">¶</a></h1>
+<p>Модуль с полезными общими функциями (не специфичными для конкретной задачи или обработки)
+Например: поиск пересекающихся значений в двух pandas.Series, применение стиля к pandas.DataFrame</p>
+<dl class="py function">
+<dt id="zenitai.utils.utils.compare_series">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">compare_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s1</span></em>, <em class="sig-param"><span class="n">s2</span></em>, <em class="sig-param"><span class="n">ret_index</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.compare_series" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Сравнивает два объекта pd.Series на предмет наличия совпадающих
+элементов
+Вход:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>s1, s2 : pd.Series, объекты для сравнения</p></li>
+<li><dl class="simple">
+<dt>ret_index<span class="classifier">bool, модификатор вывода результатов</span></dt><dd><ul>
+<li><p>True - возвращаются только</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Выход:</dt><dd><ul class="simple">
+<li><p>общие элементы из s1</p></li>
+<li><p>общие элементы из s2</p></li>
+<li><p>элементы, уникальные для s1</p></li>
+<li><p>элементы, уникальные для s2</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.utils.csv_loader">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">csv_loader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.csv_loader" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Загрузка из csv файла с преобразованием имен столбцов в lowercase</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.utils.excel_loader">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">excel_loader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.excel_loader" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Загрузка из xlsx файла с преобразованием имен столбцов в lowercase</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.utils.generate_test_data">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">generate_test_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.generate_test_data" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.utils.generate_train_data">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">generate_train_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">42</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.generate_train_data" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.utils.read_from_mssql">
+<code class="sig-prename descclassname">zenitai.utils.utils.</code><code class="sig-name descname">read_from_mssql</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.utils.read_from_mssql" title="Ссылка на это определение">¶</a></dt>
+<dd><p>загрузка данных из csv-файла, выгруженного из MS SQL SMS</p>
+</dd></dl>
+
 </div>
 
 
