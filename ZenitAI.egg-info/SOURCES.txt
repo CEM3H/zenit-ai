@@ -10,6 +10,8 @@ zenitai.egg-info/PKG-INFO
 zenitai.egg-info/SOURCES.txt
 zenitai.egg-info/dependency_links.txt
 zenitai.egg-info/top_level.txt
+zenitai/experiment/__init__.py
+zenitai/experiment/experiment.py
 zenitai/transform/__init__.py
 zenitai/transform/_woe.py
 zenitai/utils/__init__.py
