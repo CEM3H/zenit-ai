@@ -26,6 +26,7 @@ ZenitAI Package
    :maxdepth: 4
    :caption: Содержание:
 
+   experiment
    transform
    utils
 
