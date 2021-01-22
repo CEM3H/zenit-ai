@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Metrics Submodule &mdash; документация ZenitAI 0.4</title>
+  <title>Metrics Submodule &mdash; документация ZenitAI 0.5.0</title>
   
 
   
@@ -198,12 +198,12 @@
 
 <dl class="py function">
 <dt id="zenitai.utils.metrics.get_gini_and_auc">
-<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">get_gini_and_auc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.metrics.get_gini_and_auc" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">get_gini_and_auc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">plot</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#zenitai.utils.metrics.get_gini_and_auc" title="Ссылка на это определение">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="zenitai.utils.metrics.get_roc_curves">
-<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">get_roc_curves</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">suptitle</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.metrics.get_roc_curves" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">get_roc_curves</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">suptitle</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ax</span><span class="p">:</span> <span class="n">matplotlib.axes._axes.Axes</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; matplotlib.pyplot.axes<a class="headerlink" href="#zenitai.utils.metrics.get_roc_curves" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Отрисовка произвольного количества ROC-кривых на одном графике
 Например, чтобы показать качество модели на трейне и тесте
 Входные данные:
@@ -227,7 +227,7 @@
 
 <dl class="py function">
 <dt id="zenitai.utils.metrics.plot_roc">
-<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">plot_roc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">suptitle</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.metrics.plot_roc" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.metrics.</code><code class="sig-name descname">plot_roc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">facts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">preds</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">suptitle</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#zenitai.utils.metrics.plot_roc" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Отрисовка произвольного количества ROC-кривых на одном графике
 Например, чтобы показать качество модели на трейне и тесте
 Входные данные:
