@@ -73,7 +73,9 @@ class Experiment:
             self.proj_dir = Path(os.environ.get("PROJECT_DIR", "."))
         self.subfolder = "models" if subfolder is None else subfolder
 
-    def run(self, X, y, save_to_disk=True, **fit_params):
+    def run(self, X, y, X_valid=None, y_valid=None, save_to_disk=True, **fit_params):
+        if X_valid is not None and y_valid is not None:
+            self.X_valid, self.y_valid = X_valid, y_valid
         self.fit(X, y, **fit_params)
         if save_to_disk:
             self._create_exp_directory()
@@ -114,17 +116,24 @@ class Experiment:
         return self.est.predict_proba(X)[:, 1]
 
     def _get_gini_score(self, y_true, y_score):
-        roc_auc = roc_auc_score(y_true, y_score)
-        gini = np.round(2 * roc_auc - 1, 7)
-
+        try:
+            roc_auc = roc_auc_score(y_true, y_score)
+            gini = np.round(2 * roc_auc - 1, 7)
+        except Exception:
+            gini = None
         return gini
 
-    def _get_train_test_predictions(self):
+    def _get_predictions(self):
         self.preds_train = self._predict(self.X_train)
         self.preds_test = self._predict(self.X_test)
 
+    def _get_valid_predictions(self):
+        if hasattr(self, "X_valid") and hasattr(self, "y_valid"):
+            self.preds_valid = self._predict(self.X_valid)
+
     def _get_metrics(self):
-        self._get_train_test_predictions()
+        self._get_predictions()
+        self._get_valid_predictions()
 
         try:
             params = self.est.steps[-1][1].get_params()
@@ -135,6 +144,7 @@ class Experiment:
             "target_column": self.target_column,
             "gini_train": self._get_gini_score(self.y_train, self.preds_train),
             "gini_test": self._get_gini_score(self.y_test, self.preds_test),
+            "gini_valid": self._get_gini_score(self.y_valid, self.preds_valid),
             "est_algorithm_params": params,
         }
 
