@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Алфавитный указатель &mdash; документация ZenitAI 0.4</title>
+  <title>Алфавитный указатель &mdash; документация ZenitAI 0.5.0</title>
   
 
   
@@ -83,6 +83,7 @@
             
               <p class="caption"><span class="caption-text">Содержание:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Experiment</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transform.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a></li>
 </ul>
@@ -216,8 +217,6 @@
         <li><a href="metrics.html#zenitai.utils.metrics.calc_PSI">(в модуле zenitai.utils.metrics)</a>
 </li>
       </ul></li>
-      <li><a href="transform.html#zenitai.transform.cat_features_alpha_logloss">cat_features_alpha_logloss() (в модуле zenitai.transform)</a>
-</li>
       <li><a href="utils.html#zenitai.utils.check_feat_stats">check_feat_stats() (в модуле zenitai.utils)</a>
 
       <ul>
@@ -260,8 +259,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="utils_.html#zenitai.utils.utils.excel_loader">excel_loader() (в модуле zenitai.utils.utils)</a>
 </li>
+      <li><a href="experiment.html#zenitai.experiment.Experiment">Experiment (класс в zenitai.experiment)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="experiment.html#zenitai.experiment.ExperimentCatboost">ExperimentCatboost (класс в zenitai.experiment)</a>
+</li>
       <li><a href="utils.html#zenitai.utils.extract_sub_pmt_str">extract_sub_pmt_str() (в модуле zenitai.utils)</a>
 
       <ul>
@@ -274,9 +277,13 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="WoeTransformer.html#zenitai.transform.WoeTransformer.fit">fit() (метод zenitai.transform.WoeTransformer)</a>, <a href="transform.html#zenitai.transform.WoeTransformer.fit">[1]</a>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.fit">fit() (метод zenitai.experiment.Experiment)</a>
 
       <ul>
+        <li><a href="experiment.html#zenitai.experiment.ExperimentCatboost.fit">(метод zenitai.experiment.ExperimentCatboost)</a>
+</li>
+        <li><a href="WoeTransformer.html#zenitai.transform.WoeTransformer.fit">(метод zenitai.transform.WoeTransformer)</a>, <a href="transform.html#zenitai.transform.WoeTransformer.fit">[1]</a>
+</li>
         <li><a href="transform.html#zenitai.transform.WoeTransformerRegularized.fit">(метод zenitai.transform.WoeTransformerRegularized)</a>
 </li>
       </ul></li>
@@ -314,9 +321,11 @@
         <li><a href="metrics.html#zenitai.utils.metrics.get_gini_and_auc">(в модуле zenitai.utils.metrics)</a>
 </li>
       </ul></li>
+      <li><a href="transform.html#zenitai.transform.WoeTransformer.get_iv">get_iv() (метод zenitai.transform.WoeTransformer)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="transform.html#zenitai.transform.WoeTransformer.get_iv">get_iv() (метод zenitai.transform.WoeTransformer)</a>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.get_metrics">get_metrics() (метод zenitai.experiment.Experiment)</a>
 </li>
       <li><a href="utils.html#zenitai.utils.get_predictions">get_predictions() (в модуле zenitai.utils)</a>
 
@@ -376,6 +385,8 @@
         <li><a href="functions.html#zenitai.utils.functions.positive_coef_drop">(в модуле zenitai.utils.functions)</a>
 </li>
       </ul></li>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.predict">predict() (метод zenitai.experiment.Experiment)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -389,11 +400,19 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.roc_curve">roc_curve() (метод zenitai.experiment.Experiment)</a>
+</li>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.run">run() (метод zenitai.experiment.Experiment)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="experiment.html#zenitai.experiment.Experiment.save_roc_curve">save_roc_curve() (метод zenitai.experiment.Experiment)</a>
+</li>
       <li><a href="utils.html#zenitai.utils.select_feats">select_feats() (в модуле zenitai.utils)</a>
 
       <ul>
@@ -465,6 +484,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
+    zenitai.experiment
+
+      <ul>
+        <li><a href="experiment.html#module-zenitai.experiment">модуль</a>
+</li>
+      </ul></li>
+      <li>
     zenitai.transform
 
       <ul>
@@ -518,6 +544,8 @@
     модуль
 
       <ul>
+        <li><a href="experiment.html#module-zenitai.experiment">zenitai.experiment</a>
+</li>
         <li><a href="transform.html#module-zenitai.transform">zenitai.transform</a>
 </li>
         <li><a href="utils.html#module-zenitai.utils">zenitai.utils</a>

@@ -1,7 +1,7 @@
-:mod:`Functions` Submodule
+:mod:`Experiment` Module
 -----------------------
 
-.. automodule:: zenitai.utils.functions
+.. automodule:: zenitai.experiment
     :members:
     :undoc-members:
     :show-inheritance:

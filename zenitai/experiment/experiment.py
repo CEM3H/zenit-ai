@@ -9,16 +9,12 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-from src.utils.utils import get_roc_curves
 from sklearn.pipeline import Pipeline
+from zenitai.utils.metrics import get_roc_curves
 
 
 class Experiment:
     """
-    NOTE: поддерживатся только алгоритмы классификации
-    TODO: создать отдельные классы-наследники для работы с регрессией ИЛИ
-    отдельный класс для сохранение метрик
-
     Класс для запуска экспериментов и сохранения артефактов модели на диск.
     Каждый запуск порождает отдельную подпапку с таймстемпом в папке
     с названием эксперимента
@@ -29,6 +25,13 @@ class Experiment:
     `PROJECT_DIR` - рекомендуется создать такой файл в корне папки с проектом
 
     Основной метод - `run`, но есть доступ к `fit/predict` модели
+
+    NOTE: поддерживается только алгоритмы классификации
+
+    TODO: создать отдельные классы-наследники для работы с регрессией ИЛИ
+    отдельный класс для сохранение метрик
+
+
     Параметры:
     ----------
 

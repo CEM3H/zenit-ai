@@ -1,7 +1,7 @@
-:mod:`Transform` Module
+:mod:`Experiment` Module
 -----------------------
 
-.. automodule:: zenitai.transform
+.. automodule:: zenitai.experiment
     :members:
     :undoc-members:
     :show-inheritance:

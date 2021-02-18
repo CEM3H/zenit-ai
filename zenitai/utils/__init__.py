@@ -1,5 +1,5 @@
 """
-Hello World!
+Модуль с полезными функциями
 """
 
 from . import functions

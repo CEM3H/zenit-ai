@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Functions Submodule &mdash; документация ZenitAI 0.4</title>
+  <title>Functions Submodule &mdash; документация ZenitAI 0.5.0</title>
   
 
   
@@ -184,11 +184,11 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.functions.extract_sub_pmt_str">
-<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">extract_sub_pmt_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">pmtstr</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pmtstr_enddt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">retro_dt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">depth</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">12</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="headerlink" href="#zenitai.utils.functions.extract_sub_pmt_str" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">extract_sub_pmt_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">pmtstr</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pmtstr_enddt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">retro_dt</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">depth</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">12</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="headerlink" href="#zenitai.utils.functions.extract_sub_pmt_str" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты</p>
 <blockquote>
 <div><dl class="simple">
-<dt>df<span class="classifier">pandas.Dataframe</span></dt><dd><p>Таблица с данными</p>
+<dt>df<span class="classifier">pandas.DataFrame</span></dt><dd><p>Таблица с данными</p>
 </dd>
 <dt>pmtstr<span class="classifier">str</span></dt><dd><p>Название столбца, содержащего платежную строку</p>
 </dd>
@@ -220,7 +220,7 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.functions.get_worst_status">
-<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">get_worst_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.get_worst_status" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">get_worst_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#zenitai.utils.functions.get_worst_status" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Функция для выбора наихудшего статуса из платежной строки
 можно применять в методе .apply
 Входные данные:
@@ -260,7 +260,7 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.functions.select_features_corr">
-<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_features_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">corr_matrices</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">pearson_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">cramer_sens</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.select_features_corr" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">select_features_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">corr_matrices</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">pearson_sens</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">cramer_sens</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="headerlink" href="#zenitai.utils.functions.select_features_corr" title="Ссылка на это определение">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -271,7 +271,7 @@ x2 - переменная 2</p>
 
 <dl class="py function">
 <dt id="zenitai.utils.functions.split_train_test_valid">
-<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">split_train_test_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">test_size</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">val_size</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.functions.split_train_test_valid" title="Ссылка на это определение">¶</a></dt>
+<code class="sig-prename descclassname">zenitai.utils.functions.</code><code class="sig-name descname">split_train_test_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">test_size</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">val_size</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>Any<span class="p">, </span>Optional<span class="p">[</span>Any<span class="p">]</span><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Any<span class="p">]</span><a class="headerlink" href="#zenitai.utils.functions.split_train_test_valid" title="Ссылка на это определение">¶</a></dt>
 <dd><p>Разбиение выборки на обучающую, валидационную и тестовую c сохранением доли таргета
 kwargs - аргументы для train_test_split из scikit-learn
 Возвращает: X_train, X_val, X_test, y_train, y_val, y_test</p>

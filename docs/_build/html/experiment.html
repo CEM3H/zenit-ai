@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Experiment Module &mdash; документация ZenitAI 0.5.0</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/translations.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Transform Module" href="transform.html" />
+    <link rel="prev" title="Welcome to ZenitAI’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> ZenitAI
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Содержание:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Experiment</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transform.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZenitAI</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">Experiment</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/experiment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="experiment-module">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Experiment</span></code> Module<a class="headerlink" href="#experiment-module" title="Ссылка на этот заголовок">¶</a></h1>
+<span class="target" id="module-zenitai.experiment"></span><p>Инструменты дяя запуска и управлением экспериментами</p>
+<dl class="py class">
+<dt id="zenitai.experiment.Experiment">
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">target_column</span></em>, <em class="sig-param"><span class="n">estimator</span></em>, <em class="sig-param"><span class="n">proj_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subfolder</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">random_seed</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment" title="Ссылка на это определение">¶</a></dt>
+<dd><blockquote>
+<div><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</div></blockquote>
+<p>Класс для запуска экспериментов и сохранения артефактов модели на диск.
+Каждый запуск порождает отдельную подпапку с таймстемпом в папке
+с названием эксперимента
+Сохраняет json-файл с метриками, график ROC-AUC в png, модель и самого себя в pickle
+и обучающую выборку в pickle (отдельно предикторы и таргет)</p>
+<p>Класс пытается найти файл с переменными окружения <cite>.env</cite> и найти там переменную
+<cite>PROJECT_DIR</cite> - рекомендуется создать такой файл в корне папки с проектом</p>
+<p>Основной метод - <cite>run</cite>, но есть доступ к <cite>fit/predict</cite> модели</p>
+<p>NOTE: поддерживается только алгоритмы классификации</p>
+<p>TODO: создать отдельные классы-наследники для работы с регрессией ИЛИ
+отдельный класс для сохранение метрик</p>
+<blockquote>
+<div><dl class="simple">
+<dt>name<span class="classifier">str</span></dt><dd><p>Название эксперимента, определяет родительскую папку, куда будут
+сохраняться артефакты модели</p>
+</dd>
+<dt>target_column<span class="classifier">str</span></dt><dd><p>Имя столбца с целевой переменной - сохраняется в файл с метриками</p>
+</dd>
+<dt>estimator<span class="classifier">Generic</span></dt><dd><p>Модель для применения к данным. На данный момент лучше всего
+протестировано с <cite>sklearn.pipeline.Pipeline</cite>, но должен подойти любой
+класс, поддерживающий <cite>fit/predict</cite></p>
+</dd>
+<dt>proj_dir<span class="classifier">str</span></dt><dd><p>Имя корневой директории проекта, если не указана, то предпринимается
+поиск в файле <cite>.env</cite>. Если поиск оказывается не успешным, то корневой
+считается та же директория, из которой запускается скрипт</p>
+</dd>
+<dt>subfolder<span class="classifier">str</span></dt><dd><p>Название общей папки со всеми экспериментами. Если не указано, то
+устанавливается в значение <cite>models</cite>.
+Папка создается внутри рабочей директории <cite>proj_dir</cite></p>
+</dd>
+<dt>params<span class="classifier">dict</span></dt><dd><p>Не используется. Предполагается загрузка гиперпараметров для <cite>estimator</cite></p>
+</dd>
+<dt>random_seed<span class="classifier">int</span></dt><dd><p>Инициализация генероторо случайных чисел</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">fit_params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.fit" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.get_metrics">
+<code class="sig-name descname">get_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.get_metrics" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.predict" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.roc_curve">
+<code class="sig-name descname">roc_curve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.roc_curve" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">save_to_disk</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">fit_params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.run" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="zenitai.experiment.Experiment.save_roc_curve">
+<code class="sig-name descname">save_roc_curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.Experiment.save_roc_curve" title="Ссылка на это определение">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="zenitai.experiment.ExperimentCatboost">
+<em class="property">class </em><code class="sig-prename descclassname">zenitai.experiment.</code><code class="sig-name descname">ExperimentCatboost</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">target_column</span></em>, <em class="sig-param"><span class="n">estimator</span></em>, <em class="sig-param"><span class="n">proj_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subfolder</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">random_seed</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.ExperimentCatboost" title="Ссылка на это определение">¶</a></dt>
+<dd><blockquote>
+<div><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">zenitai.experiment.experiment.Experiment</span></code></p>
+</div></blockquote>
+<p>Класс для уточнения реализации при работе c Catboost[Classifier]</p>
+<dl class="py method">
+<dt id="zenitai.experiment.ExperimentCatboost.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">save_to_disk</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">fit_params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.experiment.ExperimentCatboost.fit" title="Ссылка на это определение">¶</a></dt>
+<dd><p>Дублирует поведение родительского метода fit, но добавляет параметр eval_set</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="transform.html" class="btn btn-neutral float-right" title="Transform Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to ZenitAI’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Авторские права 2020, ZenitAI Team
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
