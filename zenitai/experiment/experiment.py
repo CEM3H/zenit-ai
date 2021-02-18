@@ -83,10 +83,12 @@ class Experiment:
             self.save_roc_curve(self.exp_dirname)
 
     def fit(self, X, y, **fit_params):
+        np.random.seed(self.seed)
         self._get_current_time_str()
         self._generate_exp_dirname()
         self._split_data(X, y)
         self.est.fit(self.X_train, self.y_train, **fit_params)
+        self._get_model()
         return self
 
     def predict(self, X, y=None):
@@ -123,28 +125,44 @@ class Experiment:
             gini = None
         return gini
 
-    def _get_predictions(self):
+    def _get_predictions_and_scores(self):
         self.preds_train = self._predict(self.X_train)
         self.preds_test = self._predict(self.X_test)
 
-    def _get_valid_predictions(self):
+        self.gini_train = self._get_gini_score(self.y_train, self.preds_train)
+        self.gini_test = self._get_gini_score(self.y_test, self.preds_test)
+
         if hasattr(self, "X_valid") and hasattr(self, "y_valid"):
             self.preds_valid = self._predict(self.X_valid)
+            self.gini_valid = self._get_gini_score(self.y_valid, self.preds_valid)
+        else:
+            self.preds_valid = None
+            self.gini_valid = None
+
+    def _get_model(self):
+        if hasattr(self.est, "best_estimator_"):
+            pipe = self.est.best_estimator_
+        else:
+            pipe = self.est
+        if hasattr(pipe, "steps"):
+            self.model = pipe.steps[-1][1]
+        else:
+            self.model = pipe
 
     def _get_metrics(self):
-        self._get_predictions()
-        self._get_valid_predictions()
+        self._get_predictions_and_scores()
 
         try:
-            params = self.est.steps[-1][1].get_params()
+            params = self.model.get_params()
         except AttributeError:
-            params = self.est.get_params()
+            params = None
+
         self.metrics = {
             "seed": self.seed,
             "target_column": self.target_column,
-            "gini_train": self._get_gini_score(self.y_train, self.preds_train),
-            "gini_test": self._get_gini_score(self.y_test, self.preds_test),
-            "gini_valid": self._get_gini_score(self.y_valid, self.preds_valid),
+            "gini_train": self.gini_train,
+            "gini_test": self.gini_test,
+            "gini_valid": self.gini_valid,
             "est_algorithm_params": params,
         }
 
@@ -161,10 +179,20 @@ class Experiment:
         if not hasattr(self, "metrics"):
             self._get_metrics()
         plt.figure(figsize=(8, 8))
+
+        if hasattr(self, "y_valid") and hasattr(self, "preds_valid"):
+            facts = [self.y_train, self.y_test, self.y_valid]
+            preds = [self.preds_train, self.preds_test, self.preds_valid]
+            labels = ["train", "test", "valid"]
+        else:
+            facts = [self.y_train, self.y_test]
+            preds = [self.preds_train, self.preds_test]
+            labels = ["train", "test"]
+
         self.roc_plot = get_roc_curves(
-            [self.y_train, self.y_test],
-            [self.preds_train, self.preds_test],
-            labels=["train", "test"],
+            facts=facts,
+            preds=preds,
+            labels=labels,
         )
 
     def _dump_all(self, path):
