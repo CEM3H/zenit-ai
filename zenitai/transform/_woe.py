@@ -4,6 +4,7 @@
 """
 
 
+print("hello")
 
 import math
 import warnings
