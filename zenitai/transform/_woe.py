@@ -1,6 +1,5 @@
 """
 Функции и классы для проведения WoE-преобразований
-
 """
 
 
@@ -506,11 +505,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         R_borders = []
         min_ind = 0  # минимальный индекс. Начальные условия
 
-        DF_grouping = grouped.copy().sort_values("value")
+        DF_grouping = grouped.copy().sort_values("value").reset_index()
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
             # Расчет показателей накопительным итогом
-            DF_j = DF_grouping.loc[min_ind:]
+            DF_j = DF_grouping.iloc[min_ind:]
             DF_iter = DF_j[["sample_rate", "sample_count", "target_count"]].cumsum()
             DF_iter["non_target_count"] = DF_iter["sample_count"] - DF_iter["target_count"]
             DF_iter["target_rate"] = DF_iter["target_count"] / DF_iter["sample_count"]
