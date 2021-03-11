@@ -16,6 +16,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
+print('Hello!')
 
 class _GroupedPredictor(pd.DataFrame):
     """
