@@ -16,7 +16,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
-print('Hello!')
 
 class _GroupedPredictor(pd.DataFrame):
     """
@@ -390,6 +389,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 # Расчет монотонных границ
                 gr_subset_num = gr_subset[gr_subset["value"].isin(num_vals)].copy()
                 gr_subset_num["value"] = pd.to_numeric(gr_subset_num["value"])
+                gr_subset_num = gr_subset_num.sort_values("value")
                 borders = self._monotonic_borders(gr_subset_num, self.trend_coefs[col])
                 self.borders.update({col: borders})
                 # Применение границ к сгруппированным данным
@@ -728,7 +728,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return stats
 
-    def _statistic(self, stats, alpha=0):
+    def _statistic(self, grouped, alpha=0):
         """
         Расчет статистики по группам предиктора: минимальное, максимальное значение, доля от
         общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
@@ -736,18 +736,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         Входные данные:
         ---------------
-            stats : pandas.DataFrame
+            grouped : pandas.DataFrame
                     Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
                     уникальных значений предиктора.
                     Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
         Возвращает:
         ---------------
-            stats : pandas.DataFrame
+            grouped : pandas.DataFrame
                     Агрегированные данные по каждой группе
 
         """
         nothing = 10 ** -6
-        stats = stats.groupby(["predictor", "groups"], sort=False).agg(
+        stats = grouped.groupby(["predictor", "groups"], sort=False).agg(
             {"type": "first", "sample_count": "sum", "target_count": "sum", "value": ["min", "max"]},
         )
         stats.columns = ["type", "sample_count", "target_count", "min", "max"]
