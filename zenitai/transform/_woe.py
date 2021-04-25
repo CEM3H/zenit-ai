@@ -94,7 +94,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
     def __repr__(self):
         return "WoeTransformer(min_sample_rate={!r}, min_count={!r}, n_fitted_predictors={!r})".format(
-            self.min_sample_rate, self.min_count, len(self.predictors),
+            self.min_sample_rate,
+            self.min_count,
+            len(self.predictors),
         )
 
     def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False, join_bad_categories=False):
@@ -174,7 +176,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        X, y = self._validate_and_convert_data(X, y)
+        try:
+            X, y = self._validate_and_convert_data(X, y)
+        except AttributeError:
+            pass
         for i in X:
             if i in self.predictors:
                 try:
@@ -591,7 +596,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         res["exist_group_cum"] = res["exist_group"].cumsum().fillna(method="bfill")
 
         res[["cum_sr", "cum_sc", "cum_tc"]] = res.groupby("exist_group_cum").agg(
-            {"sample_rate": "cumsum", "sample_count": "cumsum", "target_count": "cumsum",}
+            {
+                "sample_rate": "cumsum",
+                "sample_count": "cumsum",
+                "target_count": "cumsum",
+            }
         )
 
         res["cum_sr_check"] = (
@@ -1227,7 +1236,15 @@ def group_plot(DF_result):
 
 # ## Трансформер
 def woe_transformer(
-    x, y, cat_values=[], min_sample_rate=0.05, min_count=3, errors="skip", low_accuracy=None, plot=True, verbose=True,
+    x,
+    y,
+    cat_values=[],
+    min_sample_rate=0.05,
+    min_count=3,
+    errors="skip",
+    low_accuracy=None,
+    plot=True,
+    verbose=True,
 ):
     """
     Группировка значений предиктора, определение оптимальных границ и расчет WOE и IV
