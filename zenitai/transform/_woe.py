@@ -176,10 +176,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        try:
-            X, y = self._validate_and_convert_data(X, y)
-        except AttributeError:
-            pass
+        if hasattr(self, "_validate_data"):
+            try:
+                X, y = self._validate_and_convert_data(X, y)
+            except AttributeError:
+                pass
         for i in X:
             if i in self.predictors:
                 try:
