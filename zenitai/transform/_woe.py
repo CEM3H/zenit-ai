@@ -142,7 +142,8 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # Сохранение категориальных значений
         self.cat_values = cat_values
         # Валидация данных и решейпинг
-        X, y = self._validate_and_convert_data(X, y)
+        if hasattr(self, "_validate_data"):
+            X, y = self._validate_and_convert_data(X, y)
         if self.save_data:
             self.data = X
             self.target = y
