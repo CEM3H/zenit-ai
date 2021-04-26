@@ -1,7 +1,7 @@
 """
 Функции и классы для проведения WoE-преобразований
-
 """
+
 
 import math
 import warnings
@@ -176,7 +176,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                     Преобразованный датасет
         """
         transformed = pd.DataFrame()
-        X, y = self._validate_and_convert_data(X, y)
+        if hasattr(self, "_validate_data"):
+            try:
+                X, y = self._validate_and_convert_data(X, y)
+            except AttributeError:
+                pass
         for i in X:
             if i in self.predictors:
                 try:
@@ -390,6 +394,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 # Расчет монотонных границ
                 gr_subset_num = gr_subset[gr_subset["value"].isin(num_vals)].copy()
                 gr_subset_num["value"] = pd.to_numeric(gr_subset_num["value"])
+                gr_subset_num = gr_subset_num.sort_values("value")
                 borders = self._monotonic_borders(gr_subset_num, self.trend_coefs[col])
                 self.borders.update({col: borders})
                 # Применение границ к сгруппированным данным
@@ -506,11 +511,11 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         R_borders = []
         min_ind = 0  # минимальный индекс. Начальные условия
 
-        DF_grouping = grouped.copy().sort_values("value")
+        DF_grouping = grouped.copy().sort_values("value").reset_index()
 
         while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
             # Расчет показателей накопительным итогом
-            DF_j = DF_grouping.loc[min_ind:]
+            DF_j = DF_grouping.iloc[min_ind:]
             DF_iter = DF_j[["sample_rate", "sample_count", "target_count"]].cumsum()
             DF_iter["non_target_count"] = DF_iter["sample_count"] - DF_iter["target_count"]
             DF_iter["target_rate"] = DF_iter["target_count"] / DF_iter["sample_count"]
@@ -732,7 +737,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         return stats
 
-    def _statistic(self, stats, alpha=0):
+    def _statistic(self, grouped, alpha=0):
         """
         Расчет статистики по группам предиктора: минимальное, максимальное значение, доля от
         общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
@@ -740,18 +745,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         Входные данные:
         ---------------
-            stats : pandas.DataFrame
+            grouped : pandas.DataFrame
                     Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
                     уникальных значений предиктора.
                     Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
         Возвращает:
         ---------------
-            stats : pandas.DataFrame
+            grouped : pandas.DataFrame
                     Агрегированные данные по каждой группе
 
         """
         nothing = 10 ** -6
-        stats = stats.groupby(["predictor", "groups"], sort=False).agg(
+        stats = grouped.groupby(["predictor", "groups"], sort=False).agg(
             {"type": "first", "sample_count": "sum", "target_count": "sum", "value": ["min", "max"]},
         )
         stats.columns = ["type", "sample_count", "target_count", "min", "max"]
