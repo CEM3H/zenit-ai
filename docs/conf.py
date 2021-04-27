@@ -10,16 +10,18 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-from zenitai import __version__
+# import os
+# import sys
 
-sys.path.insert(0, os.path.abspath("."))
+# sys.path.insert(0, os.path.abspath("."))
+# from .zenitai import __version__
+
 
 # -- Project information -----------------------------------------------------
 
+from pkg_resources import get_distribution
 
-# __version__ = get_distribution("ZenitAI").version
+__version__ = get_distribution("ZenitAI").version
 
 project = "ZenitAI"
 copyright = "2021, Stepan Kadochnikov"
