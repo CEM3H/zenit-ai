@@ -13,9 +13,10 @@ It is a highly customizable class facilitating data transormation with almost no
 2. a tool for managing multiple launches of machine-learning models (in early development stage)
 
 # Installation
-```pip install git+https://github.com/CEM3H/zenit-ai.git```
+```pip install zenitai```
 # Documentation
-:TBD:
+Documentation can be found on Read the Docs
+https://zenit-ai.readthedocs.io/en/latest/
 # Quickstart
 :TBD:
 
@@ -27,7 +28,7 @@ It is a highly customizable class facilitating data transormation with almost no
 
 # TODO list
 TODO:
-- добавить метод to_pickle
-- добавить логирование ошибок при обучении
-- добавить возможность активации tqdm
-- добавить юзкейсы в docstring WoeTransformera
+- Add `to_pickle` method for WoeTransformer
+- Add error logging
+- Add `tqdm` integration
+- Add some usecases for WoeTransformer
