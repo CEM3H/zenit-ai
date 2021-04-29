@@ -1,16 +1,5 @@
-"""
-Конфиг для билда пакета
-"""
+import setuptools
+from sphinx.setup_command import BuildDoc
 
-
-from setuptools import find_packages, setup
-
-setup(
-    name="ZenitAI",
-    version="0.5.2",
-    packages=find_packages(),
-    descrption="""
-    A collection of tools and utils for data analysis.
-    Contains functions and tools for WOE-transformations and other utils
-    """,
-)
+cmdclass = {"build_sphinx": BuildDoc}
+setuptools.setup()

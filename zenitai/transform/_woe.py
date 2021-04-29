@@ -26,12 +26,12 @@ class _GroupedPredictor(pd.DataFrame):
         """
         Получение подвыборки по имени предиктора(ов)
 
-        Входные данные:
+        Parameters
         ---------------
             x : str/int/list-like
                     Предиктор или список предикторов
 
-        Возвращает:
+        Returns:
         -----------
             self : pd.DataFrame
                     Часть датафрейма (самого себя)
@@ -50,45 +50,44 @@ class _GroupedPredictor(pd.DataFrame):
 class WoeTransformer(TransformerMixin, BaseEstimator):
     """Класс для построения и применения WOE группировки к датасету
 
-    Параметры
-    --------------
+    Parameters
+    ----------
+    min_sample_rate : float, default 0.05
+        Минимальный размер группы (доля от размера выборки)
+    min_count : int, default 3
+        Минимальное количество наблюдений каждого класса в группе
+    save_data : bool, default False
+        Параметр, определяющий, нужно ли сохранить данные для обучения
+        трансформера внутри экземпляра класса
+    join_bad_categories : bool, default False
+        Определяет, должени ли трансформер предпринять попытку для объединения
+        катогориальных групп в более крупные
 
-        min_sample_rate : float, default 0.05
-                Минимальный размер группы (доля от размера выборки)
+        Warning
+        -------
+        join_bad_categories - Экспериментальная функция.
+        Способ группировки категорий нестабилен
 
-        min_count : int, default 3
-                Минимальное количество наблюдений каждого класса в группе
+    Attributes
+    ----------
+    stats : pandas.DataFrame
+        Результаты WOE-группировки по всем предикторам
 
-    Атрибуты
-    -------------
+    predictors : list
+        Список предикторов, на которых была построена группировка
 
-        predictors : list
-                Список предикторов, на которых была построена группировка
+    cat_values : dict[str, list]
+        Словарь со списками категорий по предикторам, переданный при обучении
 
-        stats : pandas.DataFrame
-                Результаты WOE-группировки по всем предикторам
+    alpha_values : dict[str, float]
+        Словарь со значениями alpha для регуляризации групп
 
-        grouped : pandas.DataFrame
-                Результаты агрегации предикторов
+    possible groups : pandas.DataFrame
+        Данные о значениях предиктора, которые могли бы стать
+        отдельными категориями
 
-        cat_values : dict of lists
-                Словарь со списками категорий по предикторам, переданный при обучении
-
-        alpha_values : dict of floats
-                Словарь со значениями alpha для регуляризации групп
-
-        trend_coefs : dict of np.arrays
-                Коэффициенты тренда по количественным предикторам
-
-        borders : dict of lists
-                Монотонные границы по количественным предикторам
-
-        possible groups : pd.DataFrame
-                Данные о значениях предиктора, которые могли бы стать
-                отдельными категориями
-
-        bad_groups : pd.DataFrame
-                Данные о группах, которые не удовлетворяют условиям
+    bad_groups : pandas.DataFrame
+        Данные о группах, которые не удовлетворяют условиям
 
     """
 
@@ -99,16 +98,16 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             len(self.predictors),
         )
 
-    def __init__(self, min_sample_rate=0.05, min_count=3, save_data=False, join_bad_categories=False):
+    def __init__(
+        self,
+        min_sample_rate: float = 0.05,
+        min_count: int = 3,
+        save_data: bool = False,
+        join_bad_categories: bool = False,
+    ):
         """
         Инициализация экземпляра класса
 
-        Параметры:
-        ----------
-            min_sample_rate : float, default 0.05
-                    Минимальный размер группы (доля от размера выборки)
-            min_count : int, default 3
-                    Минимальное количество наблюдений каждого класса в группе
         """
         self.min_sample_rate = min_sample_rate
         self.min_count = min_count
@@ -125,17 +124,24 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
-        Входные данные:
+        Parameters
         ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
-            cat_values : dict, optional
-                    Словарь списков с особыми значениями, которые нужно
-                    выделить в категории
-                    По умолчанию все строковые и пропущенные значения
-                    выделяются в отдельные категории
+        X : pd.DataFrame
+                Датафрейм с предикторами, которые нужно сгруппировать
+        y : pd.Series
+                Целевая переменная
+        cat_values : dict[str, list[str]], optional
+                Словарь списков с особыми значениями, которые нужно
+                выделить в категории
+                По умолчанию все строковые и пропущенные значения
+                выделяются в отдельные категории
+        alpha_values : dict[str, float], optional
+                Словарь со значениями alpha для регуляризации WOE-групп
+
+        Returns
+        -------
+        self : WoeTransformer
+
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
@@ -165,16 +171,20 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Применение обученного трансформера к новым данным
 
-        Входные данные:
+        Parameters
         ---------------
-            X : pd.DataFrame
-                    Датафрейм, который нужно преобразовать
-                    Предикторы, которые не были сгруппированы ранее, будут
-                    проигнорированы и выведется сообщение
-        Возвращает:
+        X : pandas.DataFrame
+                Датафрейм, который нужно преобразовать
+                Предикторы, которые не были сгруппированы ранее, будут
+                проигнорированы и выведется сообщение
+        y : pandas.Series
+                Игнорируется
+
+        Returns
         -----------
-            transformed : pd.DataFrame
-                    Преобразованный датасет
+        transformed : pandas.DataFrame
+                Преобразованный датасет
+
         """
         transformed = pd.DataFrame()
         if hasattr(self, "_validate_data"):
@@ -197,21 +207,25 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         Обучение трансформера и расчет всех промежуточных данных
         с последующим примененим группировки к тем же данным
 
-        Входные данные:
+        Parameters
         ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
-            cat_values : dict, optional
-                    Словарь списков с особыми значениями, которые нужно
-                    выделить в категории
-                    По умолчанию все строковые и пропущенные значения
-                    выделяются в отдельные категории
-        Возвращает:
+        X : pandas.DataFrame
+                Датафрейм с предикторами, которые нужно сгруппировать
+        y : pandas.Series
+                Целевая переменная
+        cat_values : dict[str, list[str]], optional
+                Словарь списков с особыми значениями, которые нужно
+                выделить в категории
+                По умолчанию все строковые и пропущенные значения
+                выделяются в отдельные категории
+        alpha_values : dict[str, float], optional
+                Словарь со значениями alpha для регуляризации WOE-групп
+
+        Returns
         -----------
-            transformed : pd.DataFrame
-                    Преобразованный датасет
+        transformed : pd.DataFrame
+                Преобразованный датасет
+
         """
 
         self.fit(X, y, cat_values=cat_values, alpha_values=alpha_values)
@@ -221,14 +235,19 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Отрисовка одного или нескольких графиков группировки
 
-        Входные данные:
+        Parameters
         ---------------
-            predictors : str/list-like, default None
-                    Предиктор(ы), по которым нужны графики
-                    -- если str - отрисовывается один график
-                    -- если list-like - отрисовываются графики из списка
-                    -- если None - отрисовываются все сгруппированные предикторы
+        predictors : str or array, default None
+                Предиктор(ы), по которым нужны графики
+                -- если str - отрисовывается один график
+                -- если array - отрисовываются графики из списка
+                -- если None - отрисовываются все сгруппированные предикторы
+        Warning
+        -------
+        Запуск метода без аргументов может занять длительное время при большом
+        количестве предикторов
         """
+
         if predictors is None:
             predictors = self.predictors
         elif isinstance(predictors, str):
@@ -246,7 +265,17 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         # return fig
 
     def get_iv(self, sort=False):
-        """Получение списка значений IV по предикторам"""
+        """Получение списка значений IV по предикторам
+        Parameters
+        ----------
+        sort : bool, default False
+            Включает сортировку результата по убыванию IV
+
+        Returns
+        -------
+        pandas.Series
+
+        """
         try:
             res = self.stats.groupby("predictor")["IV"].sum()
             if sort:
@@ -276,7 +305,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             X_valid = pd.DataFrame(X, columns=predictors)
             y_valid = None
         else:
-            X_valid, y_valid = self._validate_data(X, y, dtype=None, force_all_finite=False)
+            X_valid, y_valid = self._validate_data(
+                X, y, dtype=None, force_all_finite=False
+            )
             y_valid = pd.Series(y, name="target")
             X_valid = pd.DataFrame(X, columns=predictors)
 
@@ -306,18 +337,24 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         try:
             self.grouped["value"] = self.grouped["value"].replace({"пусто": np.nan})
         except TypeError:
-            self.grouped["value"] = pd.to_numeric(self.grouped["value"], downcast="signed")
+            self.grouped["value"] = pd.to_numeric(
+                self.grouped["value"], downcast="signed"
+            )
 
     def _fit_numeric(self, X, y):
         """
         Расчет WOE и IV
 
-        Входные данные:
+        Parameters:
         ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
+        X : pd.DataFrame
+                Датафрейм с предикторами, которые нужно сгруппировать
+        y : pd.Series
+                Целевая переменная
+        Returns
+        -------
+        None
+
         """
 
         res = pd.DataFrame()
@@ -338,12 +375,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         количество целевых событий, долю группы от общего числа наблюдений
         и долю целевых в группе
 
-        Входные данные:
+        Parameters:
         ---------------
-            X : pandas.DataFrame
-                    Таблица данных для агрегации
-            y : pandas.Series
-                    Целевая переменная
+        X : pandas.DataFrame
+                Таблица данных для агрегации
+        y : pandas.Series
+                Целевая переменная
 
         """
         col = x.name
@@ -351,8 +388,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         grouped_temp = df.groupby(col)["target"].agg(["count", "sum"]).reset_index()
         grouped_temp.columns = ["value", "sample_count", "target_count"]
-        grouped_temp["sample_rate"] = grouped_temp["sample_count"] / grouped_temp["sample_count"].sum()
-        grouped_temp["target_rate"] = grouped_temp["target_count"] / grouped_temp["sample_count"]
+        grouped_temp["sample_rate"] = (
+            grouped_temp["sample_count"] / grouped_temp["sample_count"].sum()
+        )
+        grouped_temp["target_rate"] = (
+            grouped_temp["target_count"] / grouped_temp["sample_count"]
+        )
         grouped_temp.insert(0, "predictor", col)
 
         return _GroupedPredictor(grouped_temp)
@@ -361,13 +402,13 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Расчет WOE и IV
 
-        Входные данные:
+        Parameters:
         ---------------
             X : pd.DataFrame
                     Датафрейм с предикторами, которые нужно сгруппировать
             y : pd.Series
                     Целевая переменная
-            col : str
+            gr_subset : _GroupedPredictor
                     Предиктор
         """
         gr_subset_num = pd.DataFrame()
@@ -385,7 +426,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             # Расчет коэффициентов тренда по числовым значениям предиктора
             if num_mask.sum() > 0:
                 try:
-                    poly_coefs = np.polyfit(x.loc[num_mask].astype(float), y.loc[num_mask], deg=1)
+                    poly_coefs = np.polyfit(
+                        x.loc[num_mask].astype(float), y.loc[num_mask], deg=1
+                    )
                 except np.linalg.LinAlgError as e:
                     print(f"Error in np.polyfit on predictor: '{col}'.\nError MSG: {e}")
                     print("Linear Least Squares coefficients were set to [1, 0]")
@@ -427,15 +470,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Применение группировки и WoE-преобразования
 
-        Входные данные:
+        Parameters
         ---------------
-            x : pandas.Series
-                    Значения предиктора
-        Возвращает:
+        x : pandas.Series
+                Значения предиктора
+        Returns
         ---------------
-            X_woe : pandas.DataFrame
-                    WoE-преобразования значений предиктора
-                    WoE = 0, если группа не встречалась в обучающей выборке
+        X_woe : pandas.DataFrame
+                WoE-преобразования значений предиктора
+                WoE = 0, если группа не встречалась в обучающей выборке
 
         """
         orig_index = x.index
@@ -443,8 +486,16 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         if stats is None:
             stats = self.stats.get_predictor(X_woe.name)
         # Маппинги для замены групп на соответствующие значения WOE
-        num_map = {stats.loc[i, "groups"]: stats.loc[i, "WOE"] for i in stats.index if stats.loc[i, "type"] == "num"}
-        cat_map = {stats.loc[i, "groups"]: stats.loc[i, "WOE"] for i in stats.index if stats.loc[i, "type"] == "cat"}
+        num_map = {
+            stats.loc[i, "groups"]: stats.loc[i, "WOE"]
+            for i in stats.index
+            if stats.loc[i, "type"] == "num"
+        }
+        cat_map = {
+            stats.loc[i, "groups"]: stats.loc[i, "WOE"]
+            for i in stats.index
+            if stats.loc[i, "type"] == "cat"
+        }
         # Категориальные группы
         cat_bounds = stats.loc[stats["type"] == "cat", "groups"]
 
@@ -452,10 +503,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         DF_num = stats.loc[stats["type"] == "num"]
         if DF_num.shape[0] > 0:
             # Границы (правые) интервалов для разбивки числовых переменных
-            num_bounds = [-np.inf] + list(pd.IntervalIndex(stats.loc[stats["type"] == "num", "groups"]).right)
+            num_bounds = [-np.inf] + list(
+                pd.IntervalIndex(stats.loc[stats["type"] == "num", "groups"]).right
+            )
             # Выделение только числовых значений предиктора
             # (похожих на числа и тех, что явно не указаны как категориальные)
-            X_woe_num = pd.to_numeric(X_woe[(self._get_nums_mask(X_woe)) & (~X_woe.isin(cat_bounds))])
+            X_woe_num = pd.to_numeric(
+                X_woe[(self._get_nums_mask(X_woe)) & (~X_woe.isin(cat_bounds))]
+            )
             # Разбивка значений на интервалы в соответствии с группировкой
             X_woe_num = pd.cut(X_woe_num, num_bounds)
             # Замена групп на значения WOE
@@ -492,20 +547,20 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Определение оптимальных границ групп предиктора (монотонный тренд)
 
-        Входные данные:
+        Parameters
         ---------------
-            DF_grouping : pandas.DataFrame
-                    Агрегированные данные по значениям предиктора (результат работы
-                    фунции grouping, очищенный от категориальных значений).
-                    Должен содержать поля 'predictor', 'sample_count', 'target_count',
-                    'sample_rate и 'target_rate'
-            p : list-like, длиной в 2 элемента
-                    Коэффициенты линейного тренда значений предиктора
+        DF_grouping : pandas.DataFrame
+                Агрегированные данные по значениям предиктора (результат работы
+                фунции grouping, очищенный от категориальных значений).
+                Должен содержать поля 'predictor', 'sample_count', 'target_count',
+                'sample_rate и 'target_rate'
+        p : list-like, длиной в 2 элемента
+                Коэффициенты линейного тренда значений предиктора
 
-        Возвращает:
+        Returns
         ---------------
-            R_borders : list
-                 Правые границы групп для последующей группировки
+        R_borders : list
+                Правые границы групп для последующей группировки
 
         """
         k01, k11 = (1, 1) if p[0] > 0 else (0, -1)
@@ -518,7 +573,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             # Расчет показателей накопительным итогом
             DF_j = DF_grouping.iloc[min_ind:]
             DF_iter = DF_j[["sample_rate", "sample_count", "target_count"]].cumsum()
-            DF_iter["non_target_count"] = DF_iter["sample_count"] - DF_iter["target_count"]
+            DF_iter["non_target_count"] = (
+                DF_iter["sample_count"] - DF_iter["target_count"]
+            )
             DF_iter["target_rate"] = DF_iter["target_count"] / DF_iter["sample_count"]
 
             # Проверка на соответствие критериям групп
@@ -528,17 +585,29 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             # В зависимости от тренда считается скользящий _вперед_ минимум или максимум
             # (в расчете участвуют все наблюдения от текущего до последнего)
             if k11 == 1:
-                DF_iter["pd_gr"] = DF_iter["target_rate"][::-1].rolling(len(DF_iter), min_periods=0).min()[::-1]
+                DF_iter["pd_gr"] = (
+                    DF_iter["target_rate"][::-1]
+                    .rolling(len(DF_iter), min_periods=0)
+                    .min()[::-1]
+                )
             else:
-                DF_iter["pd_gr"] = DF_iter["target_rate"][::-1].rolling(len(DF_iter), min_periods=0).max()[::-1]
+                DF_iter["pd_gr"] = (
+                    DF_iter["target_rate"][::-1]
+                    .rolling(len(DF_iter), min_periods=0)
+                    .max()[::-1]
+                )
 
             # Проверка оптимальности границы
             DF_iter["opt"] = DF_iter["target_rate"] == DF_iter["pd_gr"]
             DF_iter = pd.concat([DF_j[["value"]], DF_iter], axis=1)
             try:
-                min_ind = DF_iter.loc[(DF_iter["check"]) & (DF_iter["opt"]), "target_rate"].index.values[0]
+                min_ind = DF_iter.loc[
+                    (DF_iter["check"]) & (DF_iter["opt"]), "target_rate"
+                ].index.values[0]
                 score_j = DF_iter.loc[min_ind, "value"]
-                if len(R_borders) > 0 and score_j == R_borders[-1]:  # Выход из цикла, если нет оптимальных границ
+                if (
+                    len(R_borders) > 0 and score_j == R_borders[-1]
+                ):  # Выход из цикла, если нет оптимальных границ
                     break
             except Exception:
                 break
@@ -561,12 +630,18 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
                 R_borders.remove(R_borders[-1])  # удаление последней границы
         else:
             predictor = DF_grouping["predictor"].iloc[0]
-            warnings.warn(f"Couldn't find any borders for feature {predictor}.\n Borders set on (-inf, +inf)")
+            warnings.warn(
+                f"Couldn't find any borders for feature {predictor}.\n Borders set on (-inf, +inf)"
+            )
         R_borders = [-np.inf] + R_borders + [np.inf]
         return R_borders
 
     def _check_groups(
-        self, df, sample_rate_col="sample_rate", sample_count_col="sample_count", target_count_col="target_count"
+        self,
+        df,
+        sample_rate_col="sample_rate",
+        sample_count_col="sample_count",
+        target_count_col="target_count",
     ):
         """ Проверить сгруппированные значения предиктора на соответствме условиям"""
         cond_mask = (
@@ -586,7 +661,16 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
         cond_mask = ~self._check_groups(df)
 
-        res = df[["predictor", "value", "sample_count", "target_count", "sample_rate", "target_rate"]].copy()
+        res = df[
+            [
+                "predictor",
+                "value",
+                "sample_count",
+                "target_count",
+                "sample_rate",
+                "target_rate",
+            ]
+        ].copy()
         res = res.sort_values(["sample_rate", "target_rate"])
         res["cum_sample_rate"] = res["sample_rate"].cumsum()
         res["check"] = cond_mask
@@ -606,7 +690,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         )
 
         res["cum_sr_check"] = (
-            self._check_groups(res, "cum_sr", "cum_sc", "cum_tc").astype(int).diff().eq(1).astype(int).shift()
+            self._check_groups(res, "cum_sr", "cum_sc", "cum_tc")
+            .astype(int)
+            .diff()
+            .eq(1)
+            .astype(int)
+            .shift()
         )
 
         display(res)
@@ -626,19 +715,25 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Построение графика по группировке предиктора
 
-        Входные данные:
+        Parameters
         ---------------
-            stats : pandas.DataFrame
-                    Статистика по каждой группе (результат работы функции statistic):
-                        минимальное, максимальное значение, доля от общего объема выборки,
-                        количество и доля целевых и нецелевых событий в каждой группе,
-                        WOE и IV каждой группы
-                    Должен содержать столбцы: 'sample_rate', 'target_rate', 'WOE'
+        stats : pandas.DataFrame
+                Статистика по каждой группе (результат работы функции statistic):
+                минимальное, максимальное значение, доля от общего объема выборки,
+                количество и доля целевых и нецелевых событий в каждой группе,
+                WOE и IV каждой группы
+                Должен содержать столбцы: 'sample_rate', 'target_rate', 'WOE'
+        ax_pd : matplotlib.Axes
+                Набор осей (subplot)
 
         """
         # Расчеты
-        x2 = [stats["sample_rate"][:i].sum() for i in range(stats.shape[0])] + [1]  # доля выборки с накоплением
-        x = [np.mean(x2[i : i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
+        x2 = [stats["sample_rate"][:i].sum() for i in range(stats.shape[0])] + [
+            1
+        ]  # доля выборки с накоплением
+        x = [
+            np.mean(x2[i : i + 2]) for i in range(len(x2) - 1)
+        ]  # средняя точка в группах
 
         # Выделение нужной информации для компактности
         woe = list(stats["WOE"])
@@ -650,14 +745,25 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             _, ax_pd = plt.subplots(figsize=(8, 5))
 
         # Столбчатая диаграмма доли целевых в группах
-        ax_pd.bar(x=x, height=height, width=width, color=[0, 122 / 255, 123 / 255], label="Группировка", alpha=0.7)
+        ax_pd.bar(
+            x=x,
+            height=height,
+            width=width,
+            color=[0, 122 / 255, 123 / 255],
+            label="Группировка",
+            alpha=0.7,
+        )
 
         # График значений WOE по группам
         ax_woe = ax_pd.twinx()  # дубликат осей координат
-        ax_woe.plot(x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o")
+        ax_woe.plot(
+            x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o"
+        )
 
         # Линия нулевого значения WOE
-        ax_woe.plot([0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--")
+        ax_woe.plot(
+            [0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--"
+        )
 
         # Настройка осей координат
         plt.xlim([0, 1])
@@ -681,13 +787,21 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         ax_woe.set_yticks([round(i, 2) for i in np.linspace(-max_woe, max_woe, 11)])
         ax_woe.legend(bbox_to_anchor=(1.05, 0.92), loc=[0.6, -0.25], fontsize=14)
 
-        plt.title("Группировка предиктора {}".format(stats.loc[0, "predictor"]), fontsize=18)
+        plt.title(
+            "Группировка предиктора {}".format(stats.loc[0, "predictor"]), fontsize=18
+        )
 
         # Для категориальных
         n_cat = stats.loc[stats["type"] == "cat"].shape[0]
 
         if n_cat > 0:
-            ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color="m", label="Категориальные")
+            ax_pd.bar(
+                x=x[-n_cat:],
+                height=height[-n_cat:],
+                width=width[-n_cat:],
+                color="m",
+                label="Категориальные",
+            )
             ax_pd.legend(bbox_to_anchor=(1.05, 0.76), loc=[0.15, -0.33], fontsize=14)
 
         plt.tight_layout()
@@ -702,7 +816,10 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         for i in self.predictors:
             cat_vals = self.cat_values.get(i, [])
             DF_i1 = self.grouped.get_predictor(i).copy()
-            DF_i1 = DF_i1.loc[(DF_i1["sample_rate"] > self.min_sample_rate) & (~DF_i1["value"].isin(cat_vals))]
+            DF_i1 = DF_i1.loc[
+                (DF_i1["sample_rate"] > self.min_sample_rate)
+                & (~DF_i1["value"].isin(cat_vals))
+            ]
 
             # Выделение всех значений предиктора, не отмеченных, как категориальные
             DF_i2 = self.grouped.get_predictor(i).copy()
@@ -733,8 +850,12 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         pd = (y_local * K + Y_global * alpha) / (K + alpha)"""
         Y_global = stats["target_count"].sum() / stats["sample_count"].sum()
         K = stats["sample_count"] / stats["sample_count"].sum()
-        stats["target_rate"] = (stats["target_rate"] * K + Y_global * alpha) / (K + alpha)
-        stats["target_count"] = np.floor(stats["sample_count"] * stats["target_rate"]).astype(int)
+        stats["target_rate"] = (stats["target_rate"] * K + Y_global * alpha) / (
+            K + alpha
+        )
+        stats["target_count"] = np.floor(
+            stats["sample_count"] * stats["target_rate"]
+        ).astype(int)
 
         return stats
 
@@ -744,21 +865,29 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
         А также расчет WOE и IV каждой группы
 
-        Входные данные:
+        Parameters
         ---------------
-            grouped : pandas.DataFrame
-                    Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
-                    уникальных значений предиктора.
-                    Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
-        Возвращает:
+        grouped : pandas.DataFrame
+                Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
+                уникальных значений предиктора.
+                Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
+        alpha : float, default 0
+                Коэффициент регуляризации групп
+
+        Returns
         ---------------
-            grouped : pandas.DataFrame
-                    Агрегированные данные по каждой группе
+        stats : pandas.DataFrame
+                Агрегированные данные по каждой группе
 
         """
         nothing = 10 ** -6
         stats = grouped.groupby(["predictor", "groups"], sort=False).agg(
-            {"type": "first", "sample_count": "sum", "target_count": "sum", "value": ["min", "max"]},
+            {
+                "type": "first",
+                "sample_count": "sum",
+                "target_count": "sum",
+                "value": ["min", "max"],
+            },
         )
         stats.columns = ["type", "sample_count", "target_count", "min", "max"]
         stats.reset_index(inplace=True)
@@ -776,7 +905,9 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         stats["event_rate_i"] = stats["target_count"] / (events + nothing)
         stats["non_event_rate_i"] = stats["non_events_i"] / (non_events + nothing)
 
-        stats["WOE"] = np.log(stats["non_event_rate_i"] / (stats["event_rate_i"] + nothing) + nothing)
+        stats["WOE"] = np.log(
+            stats["non_event_rate_i"] / (stats["event_rate_i"] + nothing) + nothing
+        )
 
         stats["IV"] = stats["WOE"] * (stats["non_event_rate_i"] - stats["event_rate_i"])
 
@@ -786,15 +917,15 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         """
         Расчет коэффициентов тренда
 
-        Входные данные:
+        Parameters
         ---------------
-                x : pandas.Series
-                        Значения предиктора
-                y : pandas.Series
-                        Целевая переменная
-        Возвращает:
+        x : pandas.Series
+                Значения предиктора
+        y : pandas.Series
+                Целевая переменная
+        Returns
         -----------
-                tuple - коэффициенты
+        dict[str, tuple[float, float]]
         """
         return {x.name: np.polyfit(x, y, deg=1)}
 
@@ -819,74 +950,14 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
 
 class WoeTransformerRegularized(WoeTransformer):
     """
-    Класс для построения и применения WOE группировки к датасету
-
-    **Параметры**:
-
-        min_sample_rate : float, default 0.05
-                Минимальный размер группы (доля от размера выборки)
-
-        min_count : int, default 3
-                Минимальное количество наблюдений каждого класса в группе
-        alphas : list
-                Список значений коэффициента регуляризации alpha для подбора
-        n_seeds : int, default 30
-                Количество итераций для расчета по каждому из значений alpha
-
-    **Методы**:
-        fit
-                Обучение трансформера, сохранение всех нужных данных
-
-        fit_transform
-                Обучение трансформера и применение группировки к данным
-
-        transform
-                Применение обученного трансформера к новым данным
-
-        plot_woe
-                Отрисовка графиков с результатами группировки
-
-    **Атрибуты**:
-        predictors : list
-                Список предикторов, на которых была построена группировка
-
-        stats : pandas.DataFrame
-                Результаты WOE-группировки по всем предикторам
-
-        grouped : pandas.DataFrame
-                Результаты агрегации предикторов
-
-        cat_values : dict of lists
-                Словарь со списками категорий по предикторам, переданный при обучении
-
-        alpha_values : dict of floats
-                Словарь со значениями alpha для регуляризации групп
-
-        trend_coefs : dict of np.arrays
-                Коэффициенты тренда по количественным предикторам
-
-        borders : dict of lists
-                Монотонные границы по количественным предикторам
-
-        possible groups : pd.DataFrame
-                Данные о значениях предиктора, которые могли бы стать
-                отдельными категориями
-
-        bad_groups : pd.DataFrame
-                Данные о группах, которые не удовлетворяют условиям
-
+    Класс для построения и применения WOE группировки к датасету с применением
+    регуляризации малых групп
     """
 
     def __init__(self, min_sample_rate=0.05, min_count=3, alphas=None, n_seeds=30):
         """
         Инициализация экземпляра класса
 
-        Параметры:
-        ----------
-            min_sample_rate : float, default 0.05
-                    Минимальный размер группы (доля от размера выборки)
-            min_count : int, default 3
-                    Минимальное количество наблюдений каждого класса в группе
         """
         self.min_sample_rate = min_sample_rate
         self.min_count = min_count
@@ -899,17 +970,23 @@ class WoeTransformerRegularized(WoeTransformer):
         """
         Обучение трансформера и расчет всех промежуточных данных
 
-        Входные данные:
+        Parameters
         ---------------
-            X : pd.DataFrame
-                    Датафрейм с предикторами, которые нужно сгруппировать
-            y : pd.Series
-                    Целевая переменная
-            cat_values : dict, optional
-                    Словарь списков с особыми значениями, которые нужно
-                    выделить в категории
-                    По умолчанию все строковые и пропущенные значения
-                    выделяются в отдельные категории
+        X : pd.DataFrame
+                Датафрейм с предикторами, которые нужно сгруппировать
+        y : pd.Series
+                Целевая переменная
+        cat_values : dict[str, list[str]], optional
+                Словарь списков с особыми значениями, которые нужно
+                выделить в категории
+                По умолчанию все строковые и пропущенные значения
+                выделяются в отдельные категории
+        alpha_values : dict[str, float], optional
+                Словарь со значениями alpha для регуляризации WOE-групп
+
+        Returns
+        -------
+        self : WoeTransformer
         """
         # Сброс текущего состояния трансформера
         self._reset_state()
@@ -917,7 +994,9 @@ class WoeTransformerRegularized(WoeTransformer):
         self.regularization_stats = _GroupedPredictor()
 
         for col in tqdm(X.columns, desc="Searching alphas"):
-            temp_alpha = self._cat_features_alpha_logloss(X[col], y, self.alphas, self.n_seeds)
+            temp_alpha = self._cat_features_alpha_logloss(
+                X[col], y, self.alphas, self.n_seeds
+            )
             self.alpha_values.update({col: temp_alpha})
 
         self._grouping(X, y)
@@ -967,16 +1046,24 @@ class WoeTransformerRegularized(WoeTransformer):
                 # pd = (y_local * K + Y_global * alpha) / (K + alpha)
                 Y_global = y_train.mean()
                 K = WOE_i["sample_count"] / WOE_i["sample_count"].sum()
-                WOE_i["target_rate"] = (WOE_i["target_rate"] * K + Y_global * alpha_i) / (K + alpha_i)
-                WOE_i["target_count"] = np.floor(WOE_i["sample_count"] * WOE_i["target_rate"]).astype(int)
+                WOE_i["target_rate"] = (
+                    WOE_i["target_rate"] * K + Y_global * alpha_i
+                ) / (K + alpha_i)
+                WOE_i["target_count"] = np.floor(
+                    WOE_i["sample_count"] * WOE_i["target_rate"]
+                ).astype(int)
 
                 X_test_WOE = self._transform_single(X_test, WOE_i)
 
                 roc_auc_i = sk.metrics.roc_auc_score(y_test, X_test_WOE)
                 # Подстановка регуляризованной доли целевой вместо каждой группы
-                target_transformed = X_test_WOE.replace(dict(zip(WOE_i["WOE"], WOE_i["target_rate"])))
+                target_transformed = X_test_WOE.replace(
+                    dict(zip(WOE_i["WOE"], WOE_i["target_rate"]))
+                )
                 # Запись значений
-                logloss_i.append(sk.metrics.log_loss(y_test, target_transformed.fillna(0)))
+                logloss_i.append(
+                    sk.metrics.log_loss(y_test, target_transformed.fillna(0))
+                )
                 IV_i.append(WOE_i["IV"].sum())
                 GINI_i.append(abs(2 * roc_auc_i - 1))
             # Запись средних значений
@@ -1005,7 +1092,7 @@ def grouping(DF_data_i, low_acc=False):
     Агрегация данных по значениям предиктора. Рассчитывает количество наблюдений,
     количество целевых событий, долю группы от общего числа наблюдений и долю целевых в группе
 
-    Входные данные:
+    Parameters
     ---------------
         DF_data_i : pandas.DataFrame
                 Таблица данных для агрегации, должна содержать поля 'predictor' и 'target'.
@@ -1016,7 +1103,7 @@ def grouping(DF_data_i, low_acc=False):
                 Если целое неотрицательное число, параметр используется для определения
                 количества знаков после запятой, остальные значения игнорируются
 
-    Возвращает:
+    Returns
     ---------------
         DF_grouping : pandas.DataFrame
                 Таблица с агрегированными данными по значениям предиктора
@@ -1027,10 +1114,16 @@ def grouping(DF_data_i, low_acc=False):
         DF_data_i = DF_data_i[["predictor", "target"]].round(low_acc)
 
     # Группировка и расчет показателей
-    DF_grouping = DF_data_i.groupby("predictor")["target"].agg(["count", "sum"]).reset_index()
+    DF_grouping = (
+        DF_data_i.groupby("predictor")["target"].agg(["count", "sum"]).reset_index()
+    )
     DF_grouping.columns = ["predictor", "sample_count", "target_count"]
-    DF_grouping["sample_rate"] = DF_grouping["sample_count"] / DF_grouping["sample_count"].sum()
-    DF_grouping["target_rate"] = DF_grouping["target_count"] / DF_grouping["sample_count"]
+    DF_grouping["sample_rate"] = (
+        DF_grouping["sample_count"] / DF_grouping["sample_count"].sum()
+    )
+    DF_grouping["target_rate"] = (
+        DF_grouping["target_count"] / DF_grouping["sample_count"]
+    )
 
     return DF_grouping
 
@@ -1039,7 +1132,7 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     """
     Определение оптимальных границ групп предиктора (монотонный тренд)
 
-    Входные данные:
+    Parameters
     ---------------
         DF_grouping : pandas.DataFrame
                 Агрегированные данные по значениям предиктора (результат работы
@@ -1053,7 +1146,7 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
         min_count : int, default 3
                 Минимальное количество наблюдений каждого класса в группе
 
-    Возвращает:
+    Returns
     ---------------
         R_borders : list
              Правые границы групп для последующей группировки
@@ -1082,17 +1175,29 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
         # В зависимости от тренда считается скользящий _вперед_ минимум или максимум
         # (в расчете участвуют все наблюдения от текущего до последнего)
         if k11 == 1:
-            DF_iter["pd_gr"] = DF_iter["target_rate"][::-1].rolling(len(DF_iter), min_periods=0).min()[::-1]
+            DF_iter["pd_gr"] = (
+                DF_iter["target_rate"][::-1]
+                .rolling(len(DF_iter), min_periods=0)
+                .min()[::-1]
+            )
         else:
-            DF_iter["pd_gr"] = DF_iter["target_rate"][::-1].rolling(len(DF_iter), min_periods=0).max()[::-1]
+            DF_iter["pd_gr"] = (
+                DF_iter["target_rate"][::-1]
+                .rolling(len(DF_iter), min_periods=0)
+                .max()[::-1]
+            )
 
         # Проверка оптимальности границы
         DF_iter["opt"] = DF_iter["target_rate"] == DF_iter["pd_gr"]
         DF_iter = pd.concat([DF_j[["predictor"]], DF_iter], axis=1)
         try:
-            min_ind = DF_iter.loc[(DF_iter["check"]) & (DF_iter["opt"]), "target_rate"].index.values[0]
+            min_ind = DF_iter.loc[
+                (DF_iter["check"]) & (DF_iter["opt"]), "target_rate"
+            ].index.values[0]
             score_j = DF_iter.loc[min_ind, "predictor"]
-            if len(R_borders) > 0 and score_j == R_borders[-1]:  # Выход из цикла, если нет оптимальных границ
+            if (
+                len(R_borders) > 0 and score_j == R_borders[-1]
+            ):  # Выход из цикла, если нет оптимальных границ
                 break
         except Exception:
             break
@@ -1106,7 +1211,11 @@ def monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     target_count_i = DF_iter["target_count"].sum()  # количество целевых
     non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
 
-    if (sample_rate_i < min_sample_rate) or (target_count_i < min_count) or (non_target_count_i < min_count):
+    if (
+        (sample_rate_i < min_sample_rate)
+        or (target_count_i < min_count)
+        or (non_target_count_i < min_count)
+    ):
         R_borders.remove(R_borders[-1])  # удаление последней границы
     return R_borders
 
@@ -1118,13 +1227,14 @@ def statistic(DF_groups):
     общего объема выборки, количество и доля целевых и нецелевых событий в каждой группе
     А также расчет WOE и IV каждой группы
 
-    Входные данные:
+    Parameters
     ---------------
         DF_groups : pandas.DataFrame
                 Данные полученных групп предиктора. Кол-во строк совпадает с кол-вом
                 уникальных значений предиктора.
                 Должен содержать столбцы: 'sample_count', 'target_count', 'groups'
-    Возвращает:
+
+    Returns
     ---------------
         DF_statistic : pandas.DataFrame
                 Агрегированные данные по каждой группе
@@ -1133,29 +1243,54 @@ def statistic(DF_groups):
 
     nothing = 10 ** -6
     DF_statistic = (
-        DF_groups[["sample_count", "target_count", "groups"]].groupby("groups", as_index=False, sort=False).sum()
+        DF_groups[["sample_count", "target_count", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .sum()
     )
-    DF_statistic_min = DF_groups[["predictor", "groups"]].groupby("groups", as_index=False, sort=False).min()
-    DF_statistic_max = DF_groups[["predictor", "groups"]].groupby("groups", as_index=False, sort=False).max()
+    DF_statistic_min = (
+        DF_groups[["predictor", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .min()
+    )
+    DF_statistic_max = (
+        DF_groups[["predictor", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .max()
+    )
     DF_statistic["min"] = DF_statistic_min["predictor"]
     DF_statistic["max"] = DF_statistic_max["predictor"]
-    DF_statistic["sample_rate"] = DF_statistic["sample_count"] / DF_statistic["sample_count"].sum()
-    DF_statistic["target_rate"] = DF_statistic["target_count"] / DF_statistic["sample_count"]
+    DF_statistic["sample_rate"] = (
+        DF_statistic["sample_count"] / DF_statistic["sample_count"].sum()
+    )
+    DF_statistic["target_rate"] = (
+        DF_statistic["target_count"] / DF_statistic["sample_count"]
+    )
 
     # Расчет WoE и IV
     samples_num = DF_statistic["sample_count"].sum()
     events = DF_statistic["target_count"].sum()
     non_events = samples_num - events
 
-    DF_statistic["non_events_i"] = DF_statistic["sample_count"] - DF_statistic["target_count"]
+    DF_statistic["non_events_i"] = (
+        DF_statistic["sample_count"] - DF_statistic["target_count"]
+    )
     DF_statistic["event_rate_i"] = DF_statistic["target_count"] / (events + nothing)
-    DF_statistic["non_event_rate_i"] = DF_statistic["non_events_i"] / (non_events + nothing)
+    DF_statistic["non_event_rate_i"] = DF_statistic["non_events_i"] / (
+        non_events + nothing
+    )
 
-    DF_statistic["WOE"] = np.log(DF_statistic["non_event_rate_i"] / (DF_statistic["event_rate_i"] + nothing) + nothing)
+    DF_statistic["WOE"] = np.log(
+        DF_statistic["non_event_rate_i"] / (DF_statistic["event_rate_i"] + nothing)
+        + nothing
+    )
 
-    DF_statistic["IV"] = DF_statistic["WOE"] * (DF_statistic["non_event_rate_i"] - DF_statistic["event_rate_i"])
+    DF_statistic["IV"] = DF_statistic["WOE"] * (
+        DF_statistic["non_event_rate_i"] - DF_statistic["event_rate_i"]
+    )
 
-    DF_statistic = DF_statistic.merge(DF_groups[["type", "groups"]].drop_duplicates(), how="left", on="groups")
+    DF_statistic = DF_statistic.merge(
+        DF_groups[["type", "groups"]].drop_duplicates(), how="left", on="groups"
+    )
 
     return DF_statistic
 
@@ -1165,25 +1300,28 @@ def group_plot(DF_result):
     """
     Построение графика по группировке предиктора
 
-    Входные данные:
+    Parameters
     ---------------
         DF_result : pandas.DataFrame
                 Статистика по каждой группе (результат работы функции statistic):
-                    минимальное, максимальное значение, доля от общего объема выборки,
-                    количество и доля целевых и нецелевых событий в каждой группе,
-                    WOE и IV каждой группы
+                минимальное, максимальное значение, доля от общего объема выборки,
+                количество и доля целевых и нецелевых событий в каждой группе,
+                WOE и IV каждой группы
                 Должен содержать столбцы: 'sample_rate', 'target_rate', 'WOE'
 
-    Возвращает:
+    Returns
     ---------------
         None
                 Не возвращает ничего
 
     """
+
     # Расчеты
     sample_rate, target_rate, WOE = ["sample_rate", "target_rate", "WOE"]
 
-    x2 = [DF_result[sample_rate][:i].sum() for i in range(DF_result.shape[0])] + [1]  # доля выборки с накоплением
+    x2 = [DF_result[sample_rate][:i].sum() for i in range(DF_result.shape[0])] + [
+        1
+    ]  # доля выборки с накоплением
     x = [np.mean(x2[i : i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
 
     # Выделение нужной информации для компактности
@@ -1195,14 +1333,25 @@ def group_plot(DF_result):
     fig, ax_pd = plt.subplots(figsize=(8, 5))
 
     # Столбчатая диаграмма доли целевых в группах
-    ax_pd.bar(x=x, height=height, width=width, color=[0, 122 / 255, 123 / 255], label="Группировка", alpha=0.7)
+    ax_pd.bar(
+        x=x,
+        height=height,
+        width=width,
+        color=[0, 122 / 255, 123 / 255],
+        label="Группировка",
+        alpha=0.7,
+    )
 
     # График значений WOE по группам
     ax_woe = ax_pd.twinx()  # дубликат осей координат
-    ax_woe.plot(x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o")
+    ax_woe.plot(
+        x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o"
+    )
 
     # Линия нулевого значения WOE
-    ax_woe.plot([0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--")
+    ax_woe.plot(
+        [0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--"
+    )
 
     # Настройка осей координат
     plt.xlim([0, 1])
@@ -1230,7 +1379,13 @@ def group_plot(DF_result):
     n_cat = DF_result.loc[DF_result["type"] == "cat"].shape[0]
 
     if n_cat > 0:
-        ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color="m", label="Категориальные")
+        ax_pd.bar(
+            x=x[-n_cat:],
+            height=height[-n_cat:],
+            width=width[-n_cat:],
+            color="m",
+            label="Категориальные",
+        )
         ax_pd.legend(loc=[0.15, -0.33], fontsize=14)
 
     plt.show()
@@ -1251,7 +1406,7 @@ def woe_transformer(
     """
     Группировка значений предиктора, определение оптимальных границ и расчет WOE и IV
 
-    Входные данные:
+    Parameters
     ---------------
         x : pandas.Series
                 Mассив числовых значений предиктора. Не должен содержать пропущенных
@@ -1280,7 +1435,7 @@ def woe_transformer(
         verbose : bool, default True
                         Включение.выключение доп. информации по группировке
 
-    Возвращает:
+    Returns
     ---------------
         DF_result : pandas.DataFrame
                 Таблица с итоговой группировкой и статистикой
@@ -1311,7 +1466,9 @@ def woe_transformer(
         DF_i2 = DF_data_gr.loc[~DF_data_gr["predictor"].isin(cat_values)]
 
         # Выбор значений: которые не равны бесконености и при этом не являются числами
-        L = ~(DF_i2["predictor"] == np.inf) & (pd.to_numeric(DF_i2["predictor"], errors="coerce").isna())
+        L = ~(DF_i2["predictor"] == np.inf) & (
+            pd.to_numeric(DF_i2["predictor"], errors="coerce").isna()
+        )
 
         DF_i2 = DF_i2.loc[L]
         # Объединение найденных значений в одну таблицу
@@ -1321,7 +1478,9 @@ def woe_transformer(
             display(DF_i)
 
     # Выделение числовых значений предиктора
-    DF_data_gr_num = DF_data_gr.loc[~DF_data_gr["predictor"].isin(cat_values)].reset_index(drop=True)
+    DF_data_gr_num = DF_data_gr.loc[
+        ~DF_data_gr["predictor"].isin(cat_values)
+    ].reset_index(drop=True)
 
     if DF_data_gr_num.shape[0] > 0:
         try:
@@ -1340,7 +1499,9 @@ def woe_transformer(
 
         try:
             # Применение границ
-            DF_data_gr_num["groups"] = pd.cut(DF_data_gr_num["predictor"], [-np.inf] + R_borders + [np.inf])
+            DF_data_gr_num["groups"] = pd.cut(
+                DF_data_gr_num["predictor"], [-np.inf] + R_borders + [np.inf]
+            )
             DF_data_gr_num["type"] = "num"
         except Exception:
             if errors == "raise":
@@ -1349,14 +1510,18 @@ def woe_transformer(
                 print("Ошибка при применении монотонных границ")
 
     # Добавление данных по категориальным значениям
-    DF_data_gr_2k = DF_data_gr.loc[DF_data_gr["predictor"].isin(cat_values)].reset_index(drop=True)
+    DF_data_gr_2k = DF_data_gr.loc[
+        DF_data_gr["predictor"].isin(cat_values)
+    ].reset_index(drop=True)
     DF_data_gr_2k["groups"] = DF_data_gr_2k["predictor"].copy()
     DF_data_gr_2k["type"] = "cat"
 
     try:
         # Расчет статистики, WoE и IV по группам числовых значений
         if DF_data_gr_num.shape[0] > 0:
-            DF_result = statistic(DF_data_gr_num.append(DF_data_gr_2k, ignore_index=True))
+            DF_result = statistic(
+                DF_data_gr_num.append(DF_data_gr_2k, ignore_index=True)
+            )
         else:
             DF_result = statistic(DF_data_gr_2k)
     except Exception:
@@ -1383,13 +1548,13 @@ def woe_apply(S_data, DF_groups):
     """
     Применение группировки и WoE-преобразования
 
-    Входные данные:---------------
+    Parameters---------------
         S_data : pandas.Series
                 Значения предиктора
         DF_groups : pandas.DataFrame
                 Данные о группировке предиктора
 
-    Возвращает:
+    Returns
     ---------------
         X_woe : pandas.DataFrame
                 WoE-преобразования значений предиктора
@@ -1415,11 +1580,16 @@ def woe_apply(S_data, DF_groups):
     DF_num = DF_groups.loc[DF_groups["type"] == "num"]
     if DF_num.shape[0] > 0:
         # Границы (правые) интервалов для разбивки числовых переменных
-        num_bounds = [-np.inf] + list(pd.IntervalIndex(DF_groups.loc[DF_groups["type"] == "num", "groups"]).right)
+        num_bounds = [-np.inf] + list(
+            pd.IntervalIndex(DF_groups.loc[DF_groups["type"] == "num", "groups"]).right
+        )
         # Выделение только числовых значений предиктора
         # (похожих на числа и тех, что явно не указаны как категориальные)
         X_woe_num = X_woe[
-            X_woe.astype(str).str.replace(r"\.|\-", "").str.replace("e", "").str.isdecimal()
+            X_woe.astype(str)
+            .str.replace(r"\.|\-", "")
+            .str.replace("e", "")
+            .str.isdecimal()
             & (~X_woe.isin(cat_bounds))
         ]
         # Разбивка значений на интервалы в соответствии с группировкой
@@ -1464,12 +1634,18 @@ def _grouping(DF_data_i):
     Агрегация данных по значениям предиктора
     DF_data_i[['predictor', 'target']] - таблица данных
     """
-    DF_i = DF_data_i[["predictor", "target"]].groupby("predictor", as_index=False).count()
+    DF_i = (
+        DF_data_i[["predictor", "target"]].groupby("predictor", as_index=False).count()
+    )
     DF_j = DF_data_i[["predictor", "target"]].groupby("predictor", as_index=False).sum()
     DF_grouping = DF_i.merge(DF_j, how="left", on="predictor")
     DF_grouping.columns = ["predictor", "sample_count", "target_count"]
-    DF_grouping["sample_rate"] = DF_grouping["sample_count"] / DF_grouping["sample_count"].sum()
-    DF_grouping["target_rate"] = DF_grouping["target_count"] / DF_grouping["sample_count"]
+    DF_grouping["sample_rate"] = (
+        DF_grouping["sample_count"] / DF_grouping["sample_count"].sum()
+    )
+    DF_grouping["target_rate"] = (
+        DF_grouping["target_count"] / DF_grouping["sample_count"]
+    )
 
     return DF_grouping
 
@@ -1489,7 +1665,9 @@ def _monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     min_ind = 0  # минимальный индекс. Начальные условия
 
     while min_ind < DF_grouping.shape[0]:  # цикл по новым группам
-        pd_gr_i = k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
+        pd_gr_i = (
+            k01  # средняя pd в группе. Начальные условия (зависит от общего тренда)
+        )
 
         for j in range(min_ind, max(DF_grouping.index) + 1):  # цикл по конечной границе
             DF_j = DF_grouping.loc[min_ind:j]
@@ -1499,7 +1677,11 @@ def _monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
             non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
             target_rate_i = target_count_i / sample_count_i
 
-            if (sample_rate_i < min_sample_rate) or (target_count_i < min_count) or (non_target_count_i < min_count):
+            if (
+                (sample_rate_i < min_sample_rate)
+                or (target_count_i < min_count)
+                or (non_target_count_i < min_count)
+            ):
                 continue  # если граница не удовлетворяет условиям
 
             if target_rate_i * k11 < pd_gr_i * k11:  # проверка оптимальности границы
@@ -1508,7 +1690,9 @@ def _monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
                 score_j = DF_grouping.loc[j, "predictor"]
 
         min_ind = min_ind_i
-        if len(L_borders) > 0 and score_j == L_borders[-1]:  # Выход из цикла, если нет оптимальных границ
+        if (
+            len(L_borders) > 0 and score_j == L_borders[-1]
+        ):  # Выход из цикла, если нет оптимальных границ
             break
         L_borders.append(score_j)
 
@@ -1520,7 +1704,11 @@ def _monotonic_borders(DF_grouping, p, min_sample_rate=0.05, min_count=3):
     target_count_i = DF_j["target_count"].sum()  # количество целевых
     non_target_count_i = sample_count_i - target_count_i  # количество нецелевых
 
-    if (sample_rate_i < min_sample_rate) or (target_count_i < min_count) or (non_target_count_i < min_count):
+    if (
+        (sample_rate_i < min_sample_rate)
+        or (target_count_i < min_count)
+        or (non_target_count_i < min_count)
+    ):
         L_borders.remove(L_borders[-1])  # удаление последней границы
 
     return L_borders
@@ -1535,31 +1723,57 @@ def _statistic(DF_groups):
     """
     nothing = 10 ** -6
     DF_statistic = (
-        DF_groups[["sample_count", "target_count", "groups"]].groupby("groups", as_index=False, sort=False).sum()
+        DF_groups[["sample_count", "target_count", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .sum()
     )
-    DF_statistic_min = DF_groups[["predictor", "groups"]].groupby("groups", as_index=False, sort=False).min()
-    DF_statistic_max = DF_groups[["predictor", "groups"]].groupby("groups", as_index=False, sort=False).max()
+    DF_statistic_min = (
+        DF_groups[["predictor", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .min()
+    )
+    DF_statistic_max = (
+        DF_groups[["predictor", "groups"]]
+        .groupby("groups", as_index=False, sort=False)
+        .max()
+    )
     DF_statistic["min"] = DF_statistic_min["predictor"]
     DF_statistic["max"] = DF_statistic_max["predictor"]
-    DF_statistic["sample_rate"] = DF_statistic["sample_count"] / DF_statistic["sample_count"].sum()
-    DF_statistic["target_rate"] = DF_statistic["target_count"] / DF_statistic["sample_count"]
+    DF_statistic["sample_rate"] = (
+        DF_statistic["sample_count"] / DF_statistic["sample_count"].sum()
+    )
+    DF_statistic["target_rate"] = (
+        DF_statistic["target_count"] / DF_statistic["sample_count"]
+    )
 
     # Расчет WoE и IV
     samples_num = DF_statistic["sample_count"].sum()
     events = DF_statistic["target_count"].sum()
     non_events = samples_num - events
 
-    DF_statistic["non_events_i"] = DF_statistic["sample_count"] - DF_statistic["target_count"]
+    DF_statistic["non_events_i"] = (
+        DF_statistic["sample_count"] - DF_statistic["target_count"]
+    )
     DF_statistic["event_rate_i"] = DF_statistic["target_count"] / (events + nothing)
-    DF_statistic["non_event_rate_i"] = DF_statistic["non_events_i"] / (non_events + nothing)
+    DF_statistic["non_event_rate_i"] = DF_statistic["non_events_i"] / (
+        non_events + nothing
+    )
 
     DF_statistic["WOE"] = [
-        math.log(DF_statistic["non_event_rate_i"][i] / (DF_statistic["event_rate_i"][i] + nothing) + nothing)
+        math.log(
+            DF_statistic["non_event_rate_i"][i]
+            / (DF_statistic["event_rate_i"][i] + nothing)
+            + nothing
+        )
         for i in DF_statistic.index
     ]
-    DF_statistic["IV"] = DF_statistic["WOE"] * (DF_statistic["non_event_rate_i"] - DF_statistic["event_rate_i"])
+    DF_statistic["IV"] = DF_statistic["WOE"] * (
+        DF_statistic["non_event_rate_i"] - DF_statistic["event_rate_i"]
+    )
 
-    DF_statistic = DF_statistic.merge(DF_groups[["type", "groups"]].drop_duplicates(), how="left", on="groups")
+    DF_statistic = DF_statistic.merge(
+        DF_groups[["type", "groups"]].drop_duplicates(), how="left", on="groups"
+    )
 
     return DF_statistic
 
@@ -1577,17 +1791,30 @@ def _group_plot(DF_result, L_cols=["sample_rate", "target_rate", "WOE"]):
 
     fig, ax_pd = plt.subplots(figsize=(8, 5))
 
-    x2 = [DF_result[sample_rate][:i].sum() for i in range(DF_result.shape[0])] + [1]  # доля выборки с накоплением
+    x2 = [DF_result[sample_rate][:i].sum() for i in range(DF_result.shape[0])] + [
+        1
+    ]  # доля выборки с накоплением
     x = [np.mean(x2[i : i + 2]) for i in range(len(x2) - 1)]  # средняя точка в группах
     woe = list(DF_result[WOE])
     height = list(DF_result[target_rate])  # проблемность в группе
     width = list(DF_result[sample_rate])  # доля выборки на группу
 
-    ax_pd.bar(x=x, height=height, width=width, color=[0, 122 / 255, 123 / 255], label="Группировка", alpha=0.7)
+    ax_pd.bar(
+        x=x,
+        height=height,
+        width=width,
+        color=[0, 122 / 255, 123 / 255],
+        label="Группировка",
+        alpha=0.7,
+    )
 
     ax_woe = ax_pd.twinx()
-    ax_woe.plot(x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o")
-    ax_woe.plot([0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--")
+    ax_woe.plot(
+        x, woe, lw=2, color=[37 / 255, 40 / 255, 43 / 255], label="woe", marker="o"
+    )
+    ax_woe.plot(
+        [0, 1], [0, 0], lw=1, color=[37 / 255, 40 / 255, 43 / 255], linestyle="--"
+    )
 
     plt.xlim([0, 1])
     plt.xticks(x2, [round(i, 2) for i in x2], fontsize=12)
@@ -1616,14 +1843,22 @@ def _group_plot(DF_result, L_cols=["sample_rate", "target_rate", "WOE"]):
     n_cat = DF_result.loc[DF_result["type"] == "cat"].shape[0]
 
     if n_cat > 0:
-        ax_pd.bar(x=x[-n_cat:], height=height[-n_cat:], width=width[-n_cat:], color="m", label="Категориальные")
+        ax_pd.bar(
+            x=x[-n_cat:],
+            height=height[-n_cat:],
+            width=width[-n_cat:],
+            color="m",
+            label="Категориальные",
+        )
         ax_pd.legend(loc=[0.15, -0.33], fontsize=14)
 
     plt.show()
 
 
 # %% ExecuteTime={"start_time": "2020-03-25T11:06:21.844897Z", "end_time": "2020-03-25T11:06:21.855955Z"}
-def _woeTransformer(x, y, cat_values=[], min_sample_rate=0.05, min_count=3, monotonic=True, plot=True):
+def _woeTransformer(
+    x, y, cat_values=[], min_sample_rate=0.05, min_count=3, monotonic=True, plot=True
+):
     """
     Vanilla-версия функции, оставлена на всякий случай
 
@@ -1645,7 +1880,9 @@ def _woeTransformer(x, y, cat_values=[], min_sample_rate=0.05, min_count=3, mono
 
     # Проверка категориальных групп (возможные дополнительные категории)
     # 1) возможные дополнительные категории
-    DF_i1 = DF_data_gr.loc[DF_data_gr["sample_rate"] > min_sample_rate].loc[~DF_data_gr["predictor"].isin(cat_values)]
+    DF_i1 = DF_data_gr.loc[DF_data_gr["sample_rate"] > min_sample_rate].loc[
+        ~DF_data_gr["predictor"].isin(cat_values)
+    ]
     DF_i2 = DF_data_gr.loc[~DF_data_gr["predictor"].isin(cat_values)]
     L = []
     for i in DF_i2["predictor"]:
@@ -1661,7 +1898,9 @@ def _woeTransformer(x, y, cat_values=[], min_sample_rate=0.05, min_count=3, mono
 
     try:
         # Выделение числовых значений предиктора
-        DF_data_gr_2 = DF_data_gr.loc[~DF_data_gr["predictor"].isin(cat_values)].reset_index(drop=True)
+        DF_data_gr_2 = DF_data_gr.loc[
+            ~DF_data_gr["predictor"].isin(cat_values)
+        ].reset_index(drop=True)
         if DF_data_gr_2.shape[0] > 0:
             DF_data_gr_2["predictor"] = DF_data_gr_2["predictor"].astype("float")
 
@@ -1673,17 +1912,23 @@ def _woeTransformer(x, y, cat_values=[], min_sample_rate=0.05, min_count=3, mono
             L_borders = _monotonic_borders(DF_data_gr_2, p, min_sample_rate, min_count)
 
             # Применение границ
-            DF_data_gr_2["groups"] = pd.cut(DF_data_gr_2["predictor"], [-np.inf] + L_borders + [np.inf])
+            DF_data_gr_2["groups"] = pd.cut(
+                DF_data_gr_2["predictor"], [-np.inf] + L_borders + [np.inf]
+            )
             DF_data_gr_2["type"] = "num"
 
         # Добавление данных по категориальным значениям
-        DF_data_gr_2k = DF_data_gr.loc[DF_data_gr["predictor"].isin(cat_values)].reset_index(drop=True)
+        DF_data_gr_2k = DF_data_gr.loc[
+            DF_data_gr["predictor"].isin(cat_values)
+        ].reset_index(drop=True)
         DF_data_gr_2k["groups"] = DF_data_gr_2k["predictor"].copy()
         DF_data_gr_2k["type"] = "cat"
 
         # Расчет статистики, WoE и IV по группам числовых значений
         if DF_data_gr_2.shape[0] > 0:
-            DF_result = _statistic(DF_data_gr_2.append(DF_data_gr_2k, ignore_index=True))
+            DF_result = _statistic(
+                DF_data_gr_2.append(DF_data_gr_2k, ignore_index=True)
+            )
         else:
             DF_result = _statistic(DF_data_gr_2k)
 
@@ -1724,7 +1969,10 @@ def _woe_apply(S_data, DF_groups):
         for i in DF_num.index:  # цикл по группам
             group_i = DF_num["groups"][i]
             woe_i = DF_num["WOE"][i]
-            values = [woe_i if (type(S_data[j]) != str and S_data[j] in group_i) else X_woe[j] for j in S_data.index]
+            values = [
+                woe_i if (type(S_data[j]) != str and S_data[j] in group_i) else X_woe[j]
+                for j in S_data.index
+            ]
             X_woe = pd.Series(values, S_data.index, name="woe")
 
     # predict по категориальным значениям (может обновлять значения по числовым)

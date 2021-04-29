@@ -1,0 +1,7 @@
+LICENSE.md
+pyproject.toml
+setup.cfg
+zenitai/ZenitAI.egg-info/PKG-INFO
+zenitai/ZenitAI.egg-info/SOURCES.txt
+zenitai/ZenitAI.egg-info/dependency_links.txt
+zenitai/ZenitAI.egg-info/top_level.txt

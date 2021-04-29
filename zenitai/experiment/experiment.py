@@ -26,15 +26,17 @@ class Experiment:
 
     Основной метод - `run`, но есть доступ к `fit/predict` модели
 
-    NOTE: поддерживается только алгоритмы классификации
+    Note
+    ----
+    поддерживаются только алгоритмы классификации
 
-    TODO: создать отдельные классы-наследники для работы с регрессией ИЛИ
-    отдельный класс для сохранение метрик
+    .. todo::
 
+        создать отдельные классы-наследники для работы с регрессией ИЛИ
+        отдельный класс для сохранение метрик
 
-    Параметры:
+    Parameters
     ----------
-
         name : str
                 Название эксперимента, определяет родительскую папку, куда будут
                 сохраняться артефакты модели
@@ -65,7 +67,16 @@ class Experiment:
 
     """
 
-    def __init__(self, name, target_column, estimator, proj_dir=None, subfolder=None, params=None, random_seed=0):
+    def __init__(
+        self,
+        name,
+        target_column,
+        estimator,
+        proj_dir=None,
+        subfolder=None,
+        params=None,
+        random_seed=0,
+    ):
         load_dotenv(find_dotenv())
         self.name = name
         self.target_column = target_column
@@ -104,7 +115,9 @@ class Experiment:
 
     def _get_current_time_str(self):
         self.cur_time = str(datetime.datetime.now())[:-7]
-        self.cur_time = self.cur_time.replace("-", "").replace(":", "").replace(" ", "_")
+        self.cur_time = (
+            self.cur_time.replace("-", "").replace(":", "").replace(" ", "_")
+        )
 
     def _generate_exp_dirname(self):
         self.exp_dirname = self.proj_dir / self.subfolder / self.name / self.cur_time
