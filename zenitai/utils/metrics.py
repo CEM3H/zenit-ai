@@ -1,6 +1,9 @@
 """
 Модуль с функциями для расчета метрик - Gini, PSI и т.п.
+
 """
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -17,14 +20,16 @@ def calc_PSI(exp, act):
     соответствующих групп (после равномерного биннинга или WOE-преобразования).
     Категориальные переменные могут передаваться без предварительных трансформаций
 
-    Входные данные:
-            exp : pandas.Series
-                    Значения предиктора из первой выборки ("ожидаемые" в терминологии PSI)
-            act : pandas.Series
-                    Значения предиктора из второй выборки ("наблюдаемые" в терминологии PSI)
-    Возвращает:
-            df : pandas.DataFrame
-                    Таблица с ожидаемыми и наблюдаемыми частотами и рассчитанных PSI по каждой группе
+    Parameters
+    ----------
+    exp : pandas.Series
+            Значения предиктора из первой выборки ("ожидаемые" в терминологии PSI)
+    act : pandas.Series
+            Значения предиктора из второй выборки ("наблюдаемые" в терминологии PSI)
+    Returns
+    --------
+    df : pandas.DataFrame
+            Таблица с ожидаемыми и наблюдаемыми частотами и рассчитанных PSI по каждой группе
 
     """
     # Расчет долей каждой категории в обеих выборках
@@ -34,29 +39,37 @@ def calc_PSI(exp, act):
     df = pd.concat([exp, act], axis=1).fillna(0).reset_index()
     df.columns = ["group", "expected", "actual"]
     # Расчет PSI по каждой группе
-    df["PSI"] = (df["actual"] - df["expected"]) * np.log((df["actual"] + 0.000001) / (df["expected"] + 0.000001))
+    df["PSI"] = (df["actual"] - df["expected"]) * np.log(
+        (df["actual"] + 0.000001) / (df["expected"] + 0.000001)
+    )
 
     return df
 
 
 def auc_to_gini(auc):
+    """Расчет коэффициента Gini по значению ROC-AUC"""
+
     return 2 * auc - 1
 
 
-def plot_roc(facts: list, preds: list, labels: list = None, suptitle: str = None) -> None:
+def plot_roc(
+    facts: list, preds: list, labels: list = None, suptitle: str = None
+) -> None:
     """Отрисовка произвольного количества ROC-кривых на одном графике
     Например, чтобы показать качество модели на трейне и тесте
-    Входные данные:
+
+    Parameters
     ---------------
-        facts : list of arrays
-                Список, состоящий из массивов фактических меток классов (0 или 1)
-        preds : list of arrays
-                Список состоящий из массивов предсказаний классификатора (результаты метода
-                `predict_proba()`)
-        labels : list, default None
-                Список меток для графиков
-        suptitle : str, default None
-                Над-заголовок для графика
+    facts : list of arrays
+            Список, состоящий из массивов фактических меток классов (0 или 1)
+    preds : list of arrays
+            Список состоящий из массивов предсказаний классификатора (результаты метода
+            `predict_proba()`)
+    labels : list, default None
+            Список меток для графиков
+    suptitle : str, default None
+            Над-заголовок для графика
+
     """
     if not len(facts) == len(preds):
         raise ValueError("Length of `facts` is not equal to lenght of `preds`")
@@ -96,23 +109,30 @@ def plot_roc(facts: list, preds: list, labels: list = None, suptitle: str = None
 
 
 def get_roc_curves(
-    facts: list, preds: list, labels: list = None, suptitle: str = None, ax: plt.Axes = None, **kwargs: dict
+    facts: list,
+    preds: list,
+    labels: list = None,
+    suptitle: str = None,
+    ax: plt.Axes = None,
+    **kwargs: dict,
 ) -> plt.axes:
-    """Отрисовка произвольного количества ROC-кривых на одном графике
+    """Отрисовка произвольного количества ROC-кривых на одном графике.
     Например, чтобы показать качество модели на трейне и тесте
-    Входные данные:
+
+    Parameters
     ---------------
-        facts : list of arrays
-                Список, состоящий из массивов фактических меток классов (0 или 1)
-        preds : list of arrays
-                Список состоящий из массивов предсказаний классификатора (результаты метода
-                `predict_proba()`)
-        labels : list, default None
-                Список меток для графиков
-        suptitle : str, default None
-                Над-заголовок для графика
-        ax : matplotlib Axes object
-        **kwargs : параметры для передачи в plt.plot
+    facts : list of arrays
+            Список, состоящий из массивов фактических меток классов (0 или 1)
+    preds : list of arrays
+            Список состоящий из массивов предсказаний классификатора (результаты метода
+            `predict_proba()`)
+    labels : list, default None
+            Список меток для графиков
+    suptitle : str, default None
+            Над-заголовок для графика
+    ax : matplotlib Axes object
+
+    **kwargs : параметры для передачи в plt.plot
 
     """
     if not len(facts) == len(preds):
@@ -138,7 +158,9 @@ def get_roc_curves(
         gini = auc_to_gini(roc_auc_score(fact, p))
         roc_list.append((fpr, tpr))
         gini_list.append(gini)
-        ax.plot(fpr, tpr, label=f"{label} (Gini = {gini:.2%})", lw=lw, alpha=alpha, **kwargs)
+        ax.plot(
+            fpr, tpr, label=f"{label} (Gini = {gini:.2%})", lw=lw, alpha=alpha, **kwargs
+        )
 
     ax.plot([0, 1], [0, 1], color="k", lw=lw, linestyle="--", alpha=alpha)
 
@@ -156,7 +178,9 @@ def get_roc_curves(
     return ax
 
 
-def get_gini_and_auc(facts: list, preds: list, plot: bool = True, **kwargs: dict) -> list:
+def get_gini_and_auc(
+    facts: list, preds: list, plot: bool = True, **kwargs: dict
+) -> list:
     gini_list: list = []
     for f, p in zip(facts, preds):
         gini_list.append(auc_to_gini(roc_auc_score(f, p)))

@@ -11,20 +11,21 @@ def compare_results_test(fun1, fun2, exact=True, **kwargs):
     """
     Сравнение результатов двух функций, которые возвращают pd.DataFrame или list
 
-    Входные данные:
+    Parameters
     ---------------
-            fun1, fun2 : function
-                    Функции, результат которых следует сравнить
-            exact : bool, default True
-                    Флаг для проверки точных значений.
-                    Если выключен: проверка точности только до 2 знака после запятой
-            **kwargs
-                    Аргументы, которые принимают функции
-                    Тестируемые функции должны принимать одинаковые аргументы
-    Возвращает:
+    fun1, fun2 : function
+            Функции, результат которых следует сравнить
+    exact : bool, default True
+            Флаг для проверки точных значений.
+            Если выключен: проверка точности только до 2 знака после запятой
+    kwargs
+            Аргументы, которые принимают функции
+            Тестируемые функции должны принимать одинаковые аргументы
+
+    Returns
     -----------
-            list of len 2
-                    Элементы списка - сумма всех значений результата каждой функции
+    list of len 2
+            Элементы списка - сумма всех значений результата каждой функции
 
     """
     res1 = fun1(**kwargs)
@@ -48,12 +49,16 @@ def compare_results_test(fun1, fun2, exact=True, **kwargs):
             ), "Суммы значений не одинаковы при округлении до 2 знаков"
 
             assert (
-                ((res1.round(4) == res2.round(4)).sum().sum()) == np.multiply(*res1.shape) == np.multiply(*res2.shape)
+                ((res1.round(4) == res2.round(4)).sum().sum())
+                == np.multiply(*res1.shape)
+                == np.multiply(*res2.shape)
             ), "Какие-то из ячеек результата различны (после округления до 4 знаков)"
             if exact:
                 level = "minor"
                 assert (
-                    ((res1 == res2).sum().sum()) == np.multiply(*res1.shape) == np.multiply(*res2.shape)
+                    ((res1 == res2).sum().sum())
+                    == np.multiply(*res1.shape)
+                    == np.multiply(*res2.shape)
                 ), "Какие-то из ячеек результата различны (без округления)"
         else:
             assert len(res1) == len(res2)
@@ -73,25 +78,28 @@ def compare_time_test(fun1, fun2, n_iter=100, *args, **kwargs):
     """
     Сравнение времени работы двух функций
 
-    Входные данные:
+    Parameters
     ---------------
-            fun1, fun2 : function
-                    Функции, время работы которых следует сравнить
-            n_iter : int, default 100
-                    Количество прогонов каждой функции
-            **kwargs
-                    Аргументы, которые принимают функции
-                    Тестируемые функции должны принимать одинаковые аргументы
-    Возвращает:
+    fun1, fun2 : function
+            Функции, время работы которых следует сравнить
+    n_iter : int, default 100
+            Количество прогонов каждой функции
+    kwargs
+            Аргументы, которые принимают функции
+            Тестируемые функции должны принимать одинаковые аргументы
+    Returns
     -----------
-            time_aggs : dict
-                    Словарь словарей с информацией о среднем значении и стандартным отклонением времени выполнения
-                    Ключи верхнего уровня - имена тестируемых функций
+    time_aggs : dict
+            Словарь словарей с информацией о среднем значении и стандартным отклонением времени выполнения
+            Ключи верхнего уровня - имена тестируемых функций
 
     """
 
     time_recs = {fun1.__name__: [], fun2.__name__: []}
-    time_aggs = {fun1.__name__: {"mean": np.nan, "std": np.nan}, fun2.__name__: {"mean": np.nan, "std": np.nan}}
+    time_aggs = {
+        fun1.__name__: {"mean": np.nan, "std": np.nan},
+        fun2.__name__: {"mean": np.nan, "std": np.nan},
+    }
     try:
         for f, fun_str in zip([fun1, fun2], list(time_recs.keys())):
             for i in range(n_iter):
@@ -99,7 +107,10 @@ def compare_time_test(fun1, fun2, n_iter=100, *args, **kwargs):
                 _ = f(**kwargs)
                 time_recs[fun_str].append(time.time() - start_time)
             time_aggs[fun_str].update(
-                {"mean": np.round(np.mean(time_recs[fun_str]), 10), "std": np.round(np.std(time_recs[fun_str]), 10)}
+                {
+                    "mean": np.round(np.mean(time_recs[fun_str]), 10),
+                    "std": np.round(np.std(time_recs[fun_str]), 10),
+                }
             )
         print("Замеры времени успешно завершены")
     except Exception:

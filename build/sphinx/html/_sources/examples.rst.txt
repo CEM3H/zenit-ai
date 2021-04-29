@@ -1,0 +1,11 @@
+:mod:`examples` Module
+-----------------------
+
+.. automodule:: zenitai.examples
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Содержание:

@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Utils Module &mdash; ZenitAI 0.5.2 documentation</title>
+
+
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+
+
+
+
+
+
+
+
+
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Functions Submodule" href="functions.html" />
+    <link rel="prev" title="zenitai.transform.WoeTransformerRegularized" href="WoeTransformerRegularized.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="index.html" class="icon icon-home"> ZenitAI
+
+
+
+          </a>
+
+
+
+
+              <div class="version">
+                0.5
+              </div>
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <p class="caption"><span class="caption-text">Содержание:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Experiment</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transform.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Transform</span></code> Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Metrics</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Tests</span></code> Submodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils_.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Submodule</a></li>
+</ul>
+</li>
+</ul>
+
+
+
+        </div>
+
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZenitAI</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+
+            <a href="_sources/utils.rst.txt" rel="nofollow"> View page source</a>
+
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-zenitai.utils">
+<span id="utils-module"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Module<a class="headerlink" href="#module-zenitai.utils" title="Permalink to this headline">¶</a></h1>
+<p>Модуль с полезными функциями</p>
+<dl class="py function">
+<dt id="zenitai.utils.auc_to_gini">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">auc_to_gini</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.auc_to_gini" title="Permalink to this definition">¶</a></dt>
+<dd><p>Расчет коэффициента Gini по значению ROC-AUC</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.build_logistic_regression">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">build_logistic_regression</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feat_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_woe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">woe_transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">fit_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.build_logistic_regression" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.calc_PSI">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">calc_PSI</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.calc_PSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Расчет значений PSI для сравнения распределений одной переменной в двух выборках
+Предполагается, что количественные переменные будут представлены в виде
+соответствующих групп (после равномерного биннинга или WOE-преобразования).
+Категориальные переменные могут передаваться без предварительных трансформаций</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exp</strong> (<em>pandas.Series</em>) – Значения предиктора из первой выборки (“ожидаемые” в терминологии PSI)</p></li>
+<li><p><strong>act</strong> (<em>pandas.Series</em>) – Значения предиктора из второй выборки (“наблюдаемые” в терминологии PSI)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>df</strong> – Таблица с ожидаемыми и наблюдаемыми частотами и рассчитанных PSI по каждой группе</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.calc_gini_lr">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">calc_gini_lr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.calc_gini_lr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.check_feat_stats">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">check_feat_stats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_counts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.check_feat_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Расчет описательных статистик признака</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.compare_results_test">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">compare_results_test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.compare_results_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Сравнение результатов двух функций, которые возвращают pd.DataFrame или list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fun1</strong> (<em>function</em>) – Функции, результат которых следует сравнить</p></li>
+<li><p><strong>fun2</strong> (<em>function</em>) – Функции, результат которых следует сравнить</p></li>
+<li><p><strong>exact</strong> (<em>bool</em><em>, </em><em>default True</em>) – Флаг для проверки точных значений.
+Если выключен: проверка точности только до 2 знака после запятой</p></li>
+<li><p><strong>kwargs</strong> – Аргументы, которые принимают функции
+Тестируемые функции должны принимать одинаковые аргументы</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Элементы списка - сумма всех значений результата каждой функции</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of len 2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.compare_series">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">compare_series</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ret_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.compare_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Сравнивает два объекта pd.Series на предмет наличия совпадающих
+элементов</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>pd.Series</em>) – объекты для сравнения</p></li>
+<li><p><strong>s2</strong> (<em>pd.Series</em>) – объекты для сравнения</p></li>
+<li><p><strong>ret_index</strong> (<em>bool</em><em>,</em>) – модификатор вывода результатов</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>- общие элементы из s1</em></p></li>
+<li><p><em>- общие элементы из s2</em></p></li>
+<li><p><em>- элементы, уникальные для s1</em></p></li>
+<li><p><em>- элементы, уникальные для s2</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.compare_time_test">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">compare_time_test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.compare_time_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Сравнение времени работы двух функций</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fun1</strong> (<em>function</em>) – Функции, время работы которых следует сравнить</p></li>
+<li><p><strong>fun2</strong> (<em>function</em>) – Функции, время работы которых следует сравнить</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>default 100</em>) – Количество прогонов каждой функции</p></li>
+<li><p><strong>kwargs</strong> – Аргументы, которые принимают функции
+Тестируемые функции должны принимать одинаковые аргументы</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>time_aggs</strong> – Словарь словарей с информацией о среднем значении и стандартным отклонением времени выполнения
+Ключи верхнего уровня - имена тестируемых функций</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.cramers_corr">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">cramers_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.cramers_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>расчет V–коэффициент Крамера
+x1 - переменная 1
+x2 - переменная 2</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.extract_sub_pmt_str">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">extract_sub_pmt_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmtstr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmtstr_enddt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retro_dt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.series.Series</span><a class="headerlink" href="#zenitai.utils.extract_sub_pmt_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Извлечение нужного количества символов из платежной строки в зависимости от ретро-даты</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Таблица с данными</p></li>
+<li><p><strong>pmtstr</strong> (<em>str</em>) – Название столбца, содержащего платежную строку</p></li>
+<li><p><strong>pmtstr_enddt</strong> (<em>str</em>) – Название столбца, содержащего последнюю дату платежной строки</p></li>
+<li><p><strong>retro_dt</strong> (<em>str</em>) – Название столбца, содержащего ретро-даты</p></li>
+<li><p><strong>depth</strong> (<em>int</em><em>, </em><em>default 12</em>) – Количество месяцев, отсчитываемых от ретро-даты</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>res</strong> – Вектор с выделенными символами покаждому наблюдению</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.generate_test_data">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">generate_test_data</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.generate_test_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.generate_train_data">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">generate_train_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.generate_train_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.get_corr_matrices">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">get_corr_matrices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.get_corr_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.get_gini_and_auc">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">get_gini_and_auc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#zenitai.utils.get_gini_and_auc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.get_predictions">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">get_predictions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_estimator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.get_predictions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.get_roc_curves">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">get_roc_curves</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suptitle</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">matplotlib.pyplot.axes</span><a class="headerlink" href="#zenitai.utils.get_roc_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Отрисовка произвольного количества ROC-кривых на одном графике.
+Например, чтобы показать качество модели на трейне и тесте</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>facts</strong> (<em>list of arrays</em>) – Список, состоящий из массивов фактических меток классов (0 или 1)</p></li>
+<li><p><strong>preds</strong> (<em>list of arrays</em>) – Список состоящий из массивов предсказаний классификатора (результаты метода
+<cite>predict_proba()</cite>)</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>default None</em>) – Список меток для графиков</p></li>
+<li><p><strong>suptitle</strong> (<em>str</em><em>, </em><em>default None</em>) – Над-заголовок для графика</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib Axes object</em>) – </p></li>
+<li><p><strong>**kwargs</strong> (<em>параметры для передачи в plt.plot</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.get_worst_status">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">get_worst_status</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#zenitai.utils.get_worst_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Функция для выбора наихудшего статуса из платежной строки
+можно применять в методе .apply</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>str</em>) – Платежная строка</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.plot_hier_corr">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">plot_hier_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corr_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.plot_hier_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Отрисовка дендрограммы иерархической кластеризации признаков
+по матрице корреляций</p>
+<p>TODO: добавить шкалу (или подписи) на тепловую карту</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.plot_roc">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">plot_roc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suptitle</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#zenitai.utils.plot_roc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Отрисовка произвольного количества ROC-кривых на одном графике
+Например, чтобы показать качество модели на трейне и тесте</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>facts</strong> (<em>list of arrays</em>) – Список, состоящий из массивов фактических меток классов (0 или 1)</p></li>
+<li><p><strong>preds</strong> (<em>list of arrays</em>) – Список состоящий из массивов предсказаний классификатора (результаты метода
+<cite>predict_proba()</cite>)</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>, </em><em>default None</em>) – Список меток для графиков</p></li>
+<li><p><strong>suptitle</strong> (<em>str</em><em>, </em><em>default None</em>) – Над-заголовок для графика</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.positive_coef_drop">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">positive_coef_drop</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gini_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iv_ordered_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.positive_coef_drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Удаление фичей с положительными коэффициентами</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.read_from_mssql">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">read_from_mssql</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.read_from_mssql" title="Permalink to this definition">¶</a></dt>
+<dd><p>загрузка данных из csv-файла, выгруженного из MS SQL SMS</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.select_feats">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">select_feats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gini_and_iv_stats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pearson_corr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cramer_corr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pearson_sens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cramer_sens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.select_feats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.select_feats_corr">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">select_feats_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_matrices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_lin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_cramer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.select_feats_corr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.select_features_corr">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">select_features_corr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_matrices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pearson_sens</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cramer_sens</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="headerlink" href="#zenitai.utils.select_features_corr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.select_features_hierarchy">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">select_features_hierarchy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.select_features_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Отбор признаков по итогам иерархической кластеризации</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.split_train_test_valid">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">split_train_test_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#zenitai.utils.split_train_test_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Разбиение выборки на обучающую, валидационную и тестовую c сохранением доли таргета
+kwargs - аргументы для train_test_split из scikit-learn
+Возвращает: X_train, X_val, X_test, y_train, y_val, y_test</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="zenitai.utils.styler_float">
+<code class="sig-prename descclassname"><span class="pre">zenitai.utils.</span></code><code class="sig-name descname"><span class="pre">styler_float</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'{:,.1%}'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zenitai.utils.styler_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Выводит датафрейм, форматируя числовые значения</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Датафрейм для отображения</p></li>
+<li><p><strong>format</strong> (<em>python format string</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Содержание:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code> Submodule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Metrics</span></code> Submodule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Tests</span></code> Submodule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils_.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Utils</span></code> Submodule</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="functions.html" class="btn btn-neutral float-right" title="Functions Submodule" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="WoeTransformerRegularized.html" class="btn btn-neutral float-left" title="zenitai.transform.WoeTransformerRegularized" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Stepan Kadochnikov.
+
+    </p>
+  </div>
+
+
+
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>
