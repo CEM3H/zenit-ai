@@ -1,10 +1,10 @@
 Metadata-Version: 2.1
 Name: ZenitAI
-Version: 0.5.2
+Version: 0.6.0
 Summary: Tools for ML
 Home-page: https://github.com/CEM3H/zenit-ai
 Author: Stepan Kadochnikov
-Author-email: dadochnikov.sv@gmail.com
+Author-email: kadochnikov.sv@gmail.com
 License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/CEM3H/zenit-ai/issues
 Description: # ZenitAI
@@ -22,9 +22,10 @@ Description: # ZenitAI
         2. a tool for managing multiple launches of machine-learning models (in early development stage)
 
         # Installation
-        ```pip install git+https://github.com/CEM3H/zenit-ai.git```
+        ```pip install zenitai```
         # Documentation
-        :TBD:
+        Documentation can be found on Read the Docs
+        https://zenit-ai.readthedocs.io/en/latest/
         # Quickstart
         :TBD:
 
@@ -36,10 +37,10 @@ Description: # ZenitAI
 
         # TODO list
         TODO:
-        - добавить метод to_pickle
-        - добавить логирование ошибок при обучении
-        - добавить возможность активации tqdm
-        - добавить юзкейсы в docstring WoeTransformera
+        - Add `to_pickle` method for WoeTransformer
+        - Add error logging
+        - Add `tqdm` integration
+        - Add some usecases for WoeTransformer
 
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
