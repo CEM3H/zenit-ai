@@ -3,14 +3,18 @@
 
 """
 
-
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import sklearn
+import statsmodels.api as sm
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
+from dataclasses import dataclass, field
+from typing import Any
 
 
 def calc_PSI(exp, act):
@@ -207,3 +211,128 @@ def calc_gini_lr(X, y):
     res = pd.DataFrame.from_records(scores, columns=["gini_train", "gini_test"])
     res.insert(0, "predictor", X.columns)
     return res
+
+
+@dataclass
+class ModelMetrics:
+    fitted_model: Any
+    train_x: pd.DataFrame = field(repr=False)
+    test_x: pd.DataFrame = field(repr=False)
+    train_y: pd.Series = field(repr=False)
+    test_y: pd.Series = field(repr=False)
+
+    def __post_init__(self):
+        # get model class
+        self.model_class = str(self.fitted_model.__class__)[8:-2]
+        # get predictions
+        try:
+            self.train_preds = self.fitted_model.predict_proba(self.train_x)[:, 1]
+            self.test_preds = self.fitted_model.predict_proba(self.test_x)[:, 1]
+        except AttributeError:
+            self.train_x = sm.tools.add_constant(self.train_x)
+            self.test_x = sm.tools.add_constant(self.test_x)
+            self.train_preds = self.fitted_model.predict(self.train_x)
+            self.test_preds = self.fitted_model.predict(self.test_x)
+        # get predictor names
+        self.predictors = list(self.train_x.columns)
+
+        # get model coefficients
+        # TODO: add options for non-regression models
+        try:
+            intercept = list(self.fitted_model.intercept_)
+            coef = list(self.fitted_model.coef_[0])
+            self.coefficients = intercept + coef
+        except AttributeError:
+            if hasattr(self.fitted_model, "params"):
+                self.coefficients = self.fitted_model.params.values
+            else:
+                self.coefficients = []
+        self.coefficients = list(self.coefficients)
+
+        self.train_data_control_sum = self.train_x.sum().sum()
+        self.test_data_control_sum = self.test_x.sum().sum()
+
+    def get_metrics(self):
+        metrics = self.__dict__.copy()
+        to_del = [
+            "fitted_model",
+            "train_x",
+            "train_y",
+            "test_x",
+            "test_y",
+            "train_preds",
+            "test_preds",
+            "train_preds_bin",
+            "test_preds_bin",
+            "confusion_matrix",
+            "TN",
+            "FP",
+            "FN",
+            "TP",
+        ]
+        for i in to_del:
+            try:
+                metrics.pop(i)
+            except KeyError:
+                continue
+
+        return metrics
+
+    def dump_metrics(self, path):
+        metrics_to_dump = dict(self.get_metrics())
+        with open(path, "w") as file:
+            json.dump(metrics_to_dump, file, indent=4, ensure_ascii=True)
+
+
+@dataclass
+class ModelMetricsClassification(ModelMetrics):
+
+    binary_threshold: float = field(default=0.5)
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        self.train_preds_bin = (self.train_preds > self.binary_threshold).astype(int)
+        self.test_preds_bin = (self.test_preds > self.binary_threshold).astype(int)
+
+        # get classification_metrics
+        # get confusion matrix
+        self.confusion_matrix = pd.DataFrame(
+            sklearn.metrics.confusion_matrix(self.test_y, self.test_preds_bin),
+            index=["actual negative", "actual positive"],
+            columns=["predicted negative", "predicted positive"],
+        )
+        # get Gini for train and test
+        self.gini_train = (
+            2 * sklearn.metrics.roc_auc_score(self.train_y, self.train_preds) - 1
+        )
+        self.gini_test = (
+            2 * sklearn.metrics.roc_auc_score(self.test_y, self.test_preds) - 1
+        )
+
+        # get TN, FP, FN and TP
+        self.TN, self.FP, self.FN, self.TP = self.confusion_matrix.values.ravel()
+
+        # get other metrcis
+        self.precision = self.TP / (self.TP + self.FP)
+        self.sensitivity = self.TP / (self.TP + self.FN)
+        self.specificity = self.TN / (self.TN + self.FP)
+
+        self.samples = {
+            "train": {
+                "n_samples": float(self.train_x.shape[0]),
+                "n_targets": float(self.train_y.sum()),
+                "target_rate": self.train_y.sum() / len(self.train_y),
+            },
+            "test": {
+                "n_samples": float(self.test_x.shape[0]),
+                "n_targets": float(self.test_y.sum()),
+                "target_rate": self.test_y.sum() / len(self.test_y),
+            },
+        }
+        self.confusion = {
+            "TN": float(self.TN),
+            "FP": float(self.FP),
+            "FN": float(self.FN),
+            "TP": float(self.TP),
+        }
