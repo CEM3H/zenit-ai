@@ -328,7 +328,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
             cat_val_mask = grouped_temp["value"].isin(self.cat_values.get(col, []))
             is_all_categorical = all(~num_mask | cat_val_mask)
 
-            if self.join_bad and is_all_categorical:
+            if self.join_bad_categories and is_all_categorical:
                 repl = self._get_cat_values_for_join(grouped_temp)
                 grouped_temp = self._group_single(df[col].replace(repl), y)
             self.grouped = self.grouped.append(grouped_temp)
