@@ -32,3 +32,6 @@ TODO:
 - Add error logging
 - Add `tqdm` integration
 - Add some usecases for WoeTransformer
+- Add option for auto-detection of categorical variables (say, 15 unique values or lower)
+- Add handling of unknown categories (don't remember if there's any)
+- Add handling of Pandas Categorical type 
