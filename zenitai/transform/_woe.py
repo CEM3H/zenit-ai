@@ -114,7 +114,7 @@ class WoeTransformer(TransformerMixin, BaseEstimator):
         self.predictors = []
         self.alpha_values = {}
         self.save_data = save_data
-        self.join_bad = join_bad_categories
+        self.join_bad_categories = join_bad_categories
 
     # -------------------------
     # Функции интерфейса класса
